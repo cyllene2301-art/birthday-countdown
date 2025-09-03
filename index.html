@@ -4,297 +4,412 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mahak's Birthday Countdown</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Pacifico&display=swap" rel="stylesheet">
   <style>
-    :root { --card-bg: rgba(255,255,255,0.15); }
     body {
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      color: #fff;
-      text-align: center;
-      overflow: hidden; /* star canvas ke liye */
-      background: #000;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
     }
-    body.dark { color: #f5f5f5; }
-
-    h1, #countdown, .card, button, #galleryContainer { position: relative; z-index: 3; }
-
-    h1 { font-size: 2rem; margin: 10px 0; }
-    #countdown { font-size: 1.4rem; margin-bottom: 16px; }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 16px;
-      margin: 10px auto;
-      max-width: 380px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.45);
-      backdrop-filter: blur(6px);
+    .font-pacifico {
+        font-family: 'Pacifico', cursive;
     }
-    img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
-    audio { margin-top: 10px; width: 100%; }
-
-    #galleryContainer {
-      display: none;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 20px;
+    .card-gradient {
+        background: rgba(255, 255, 255, 0.1);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    .gallery-card {
-      background: rgba(255,255,255,0.10);
-      border-radius: 16px;
-      padding: 10px;
-      width: 170px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-      backdrop-filter: blur(4px);
+    .body-bg {
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%);
     }
-    .gallery-card img { width: 100%; border-radius: 10px; }
-    .locked { opacity: 0.55; font-style: italic; }
-
-    button {
-      margin-top: 14px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.25);
-      color: #fff;
-      cursor: pointer;
-      transition: transform .15s ease, background .3s ease;
+    #confettiCanvas, #starrySkyCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
     }
-    button:hover { background: rgba(255,255,255,0.4); transform: translateY(-1px); }
-
-    /* Background canvases */
-    #starCanvas, #confettiCanvas {
-      position: fixed; inset: 0; width: 100%; height: 100%; display: block;
+    #confettiCanvas {
+        z-index: 100;
     }
-    #starCanvas { z-index: 1; background: #000; }
-    #confettiCanvas { z-index: 4; pointer-events: none; }
-
-    @media (max-width: 600px) {
-      h1 { font-size: 1.6rem; }
-      #countdown { font-size: 1.1rem; }
-      .gallery-card { width: 100%; max-width: 320px; }
+     #starrySkyCanvas {
+        z-index: -10;
+    }
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
     }
   </style>
 </head>
-<body>
-  <!-- Background Canvases -->
-  <canvas id="starCanvas" aria-hidden="true"></canvas>
-  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+<body class="body-bg text-white transition-all duration-500">
+  <canvas id="starrySkyCanvas"></canvas>
 
-  <h1>Mahak's 23rd Birthday 🩵</h1>
-  <div id="countdown" aria-live="polite"></div>
+  <main class="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8 relative z-10">
+    
+    <div class="text-center mb-8">
+        <h1 class="font-pacifico text-4xl sm:text-5xl text-pink-300 drop-shadow-lg">Mahak's 23rd Birthday</h1>
+        <div id="countdown" aria-live="polite" class="mt-4 text-2xl sm:text-3xl font-bold tracking-widest bg-white/10 px-4 py-2 rounded-lg"></div>
+    </div>
 
-  <div class="card" id="dailyMessage">
-    <h2>Today’s Surprise</h2>
-    <p id="message" aria-live="polite"></p>
-    <img id="image" src="" alt="Today's memory" onerror="this.style.display='none'" />
-    <audio id="audio" controls style="display:none;"></audio>
-  </div>
+    <!-- Daily Surprise Card -->
+    <div id="dailyMessage" class="card-gradient w-full max-w-sm rounded-2xl p-6 shadow-2xl relative select-none">
+      <h2 class="text-2xl font-bold mb-4 text-center">Today’s Surprise</h2>
+      <p id="message" aria-live="polite" class="text-lg mb-4 h-24 text-center flex items-center justify-center"></p>
+      <img id="image" src="" alt="Today's memory" class="rounded-xl aspect-square object-cover w-full shadow-lg transition-all duration-300" onerror="this.style.display='none';" />
+      
+      <!-- Navigation Arrows -->
+      <button id="prevBtn" class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/20 p-2 rounded-full hover:bg-white/40 transition disabled:opacity-0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <button id="nextBtn" class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/20 p-2 rounded-full hover:bg-white/40 transition disabled:opacity-0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+    </div>
 
-  <button id="toggleGallery">Open Memory Gallery</button>
-  <button id="themeToggle">Toggle Dark/Light</button>
-  <div id="galleryContainer"></div>
+    <!-- Control Buttons -->
+    <div class="flex justify-center mt-8">
+      <button id="toggleGallery" class="card-gradient px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all shadow-lg">Open Gallery</button>
+    </div>
+    
+    <!-- Gallery Container -->
+    <div id="galleryContainer" class="hidden grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-8 w-full max-w-5xl relative z-10"></div>
+  </main>
+  
+  <canvas id="confettiCanvas"></canvas>
 
-  <audio id="toggleSound" src="sounds/toggle.mp3" preload="auto"></audio>
-
-  <!-- Starry Sky + Shooting Stars -->
   <script>
-    const starCanvas = document.getElementById('starCanvas');
-    const sctx = starCanvas.getContext('2d');
-    function resizeStars(){ starCanvas.width = innerWidth; starCanvas.height = innerHeight; }
-    resizeStars(); addEventListener('resize', resizeStars);
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- CONFIGURATION ---
+        const birthday = new Date("2025-09-25T00:00:00+05:30").getTime();
+        const unlockStartDate = new Date("2025-09-04T00:00:00+05:30").getTime();
+        const messages = [
+            // Memories from Sep 4 to Sep 25
+            { date: "Sep 4", text: "The countdown begins! Thinking of our first coffee together.", img: "images/sep4.jpg" },
+            { date: "Sep 5", text: "Remember that time we laughed so hard we couldn't breathe?", img: "images/sep5.jpg" },
+            { date: "Sep 6", text: "Your smile could light up the entire city. Never forget that.", img: "images/sep6.jpg" },
+            { date: "Sep 7", text: "Thinking about our late-night talks. They mean the world.", img: "images/sep7.jpg" },
+            { date: "Sep 8", text: "You have a heart of gold. Don't ever let anyone dull your sparkle.", img: "images/sep8.jpg" },
+            { date: "Sep 9", text: "That silly dance you do when you're happy is my favorite thing.", img: "images/sep9.jpg" },
+            { date: "Sep 10", text: "Just a reminder that you are strong, capable, and amazing.", img: "images/sep10.jpg" },
+            { date: "Sep 11", text: "Remember that adventure we went on? Let's do it again soon.", img: "images/sep11.jpg" },
+            { date: "Sep 12", text: "Your kindness is a superpower.", img: "images/sep12.jpg" },
+            { date: "Sep 13", text: "I'm so grateful to have you in my life.", img: "images/sep13.jpg" },
+            { date: "Sep 14", text: "Can't wait to see what amazing things you do this year.", img: "images/sep14.jpg" },
+            { date: "Sep 15", text: "Your passion for your hobbies is truly inspiring.", img: "images/sep15.jpg" },
+            { date: "Sep 16", text: "Thinking about you and smiling today.", img: "images/sep16.jpg" },
+            { date: "Sep 17", text: "You make ordinary moments extraordinary.", img: "images/sep17.jpg" },
+            { date: "Sep 18", text: "Thank you for being you.", img: "images/sep18.jpg" },
+            { date: "Sep 19", text: "Never stop dreaming. You're destined for greatness.", img: "images/sep19.jpg" },
+            { date: "Sep 20", text: "Getting closer! The excitement is building up!", img: "images/sep20.jpg" },
+            { date: "Sep 21", text: "You deserve all the happiness in the world.", img: "images/sep21.jpg" },
+            { date: "Sep 22", text: "Three more days! Can you feel the magic in the air?", img: "images/sep22.jpg" },
+            { date: "Sep 23", text: "So close! Hope you're ready for an amazing birthday.", img: "images/sep23.jpg" },
+            { date: "Sep 24", text: "The day before the big day! Sending you all my love.", img: "images/sep24.jpg" },
+            { date: "Sep 25", text: "HAPPY BIRTHDAY, MAHAK! 🎉 You're officially 23! Let's celebrate!", img: "images/sep25.jpg" },
+        ];
 
-    // Dense twinkling stars with natural colors
-    const STAR_COUNT = 320;
-    const STAR_COLORS = ['#ffffff','#a5b4fc','#c084fc','#60a5fa']; // white, lavender, purple, blue
-    const stars = Array.from({length: STAR_COUNT}, () => ({
-      x: Math.random()*starCanvas.width,
-      y: Math.random()*starCanvas.height,
-      r: Math.random()*1.3 + 0.3,
-      a: Math.random(), // alpha
-      da: (Math.random()*0.02) * (Math.random()<0.5?-1:1),
-      color: STAR_COLORS[(Math.random()*STAR_COLORS.length)|0]
-    }));
+        // --- DOM ELEMENTS ---
+        const countdownEl = document.getElementById("countdown");
+        const messageEl = document.getElementById("message");
+        const imageEl = document.getElementById("image");
+        const dailyMessageCard = document.getElementById("dailyMessage");
+        const galleryContainer = document.getElementById("galleryContainer");
+        const toggleGalleryBtn = document.getElementById("toggleGallery");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        
+        // --- STATE ---
+        let unlockedCount = 0;
+        let currentIndex = 0;
 
-    // Shooting star spawner with variable timing
-    function spawnShootingStar(){
-      const angle = Math.PI/4; // 45deg
-      let x = Math.random()*starCanvas.width*0.7; // left-ish spawn
-      let y = Math.random()*starCanvas.height*0.5; // upper half
-      let len = Math.random()*90 + 60;
-      const speed = 8; // fast
-      const trailColor = ['#ffffff','#93c5fd','#a78bfa','#f472b6'][(Math.random()*4)|0];
+        // --- FUNCTIONS ---
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = birthday - now;
 
-      function tick(){
-        // light blur trail
-        sctx.globalCompositeOperation = 'lighter';
-        sctx.beginPath();
-        sctx.moveTo(x, y);
-        sctx.lineTo(x - len*Math.cos(angle), y - len*Math.sin(angle));
-        sctx.strokeStyle = trailColor;
-        sctx.lineWidth = 2;
-        sctx.stroke();
-        sctx.globalCompositeOperation = 'source-over';
+            if (diff <= 0) {
+                countdownEl.innerHTML = "🎉 Happy Birthday! 🎉";
+                launchConfetti();
+                // We clear the interval once birthday is reached
+                if(this.intervalId) clearInterval(this.intervalId);
+                return;
+            }
 
-        x += speed*Math.cos(angle);
-        y += speed*Math.sin(angle);
-        len *= 0.94;
-        if (len > 1) requestAnimationFrame(tick);
-      }
-      tick();
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-      // schedule next with random 2–5s delay
-      setTimeout(spawnShootingStar, 2000 + Math.random()*3000);
-    }
-
-    function renderStars(){
-      sctx.clearRect(0,0,starCanvas.width, starCanvas.height);
-      for(const s of stars){
-        s.a += s.da; if(s.a < 0 || s.a > 1) s.da *= -1;
-        sctx.globalAlpha = Math.max(0, Math.min(1, s.a));
-        sctx.fillStyle = s.color;
-        sctx.beginPath(); sctx.arc(s.x, s.y, s.r, 0, Math.PI*2); sctx.fill();
-      }
-      sctx.globalAlpha = 1;
-      requestAnimationFrame(renderStars);
-    }
-    renderStars();
-    setTimeout(spawnShootingStar, 2500 + Math.random()*1500);
-  </script>
-
-  <!-- App Logic (Countdown + Unlocks + Gallery + Swipe) -->
-  <script>
-    // Countdown to birthday (IST)
-    const countdown = document.getElementById('countdown');
-    const birthday = new Date('2025-09-25T00:00:00+05:30').getTime();
-    const confettiCanvas = document.getElementById('confettiCanvas');
-    const cctx = confettiCanvas.getContext('2d');
-    function resizeConfetti(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
-    resizeConfetti(); addEventListener('resize', resizeConfetti);
-
-    let confettiLaunched = false;
-    setInterval(() => {
-      const now = Date.now();
-      const diff = birthday - now;
-      if (diff <= 0) {
-        countdown.textContent = '🎉 Happy Birthday Mahak! 🎉';
-        if (!confettiLaunched) { confettiLaunched = true; launchConfetti(); }
-        return;
-      }
-      const d = Math.floor(diff/86400000);
-      const h = Math.floor((diff%86400000)/3600000);
-      const m = Math.floor((diff%3600000)/60000);
-      const s = Math.floor((diff%60000)/1000);
-      countdown.textContent = `${d}d ${h}h ${m}m ${s}s`;
-    }, 1000);
-
-    function launchConfetti(){
-      const pieces = Array.from({length: 220}, ()=>({
-        x: Math.random()*confettiCanvas.width,
-        y: Math.random()*confettiCanvas.height,
-        r: Math.random()*6+3,
-        dx: (Math.random()-0.5)*1.5,
-        dy: Math.random()*2+1,
-        color: `hsl(${Math.random()*360},100%,50%)`
-      }));
-      (function loop(){
-        cctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-        for(const p of pieces){
-          cctx.beginPath(); cctx.arc(p.x,p.y,p.r,0,Math.PI*2); cctx.fillStyle=p.color; cctx.fill();
-          p.x+=p.dx; p.y+=p.dy; if(p.y>confettiCanvas.height) p.y=0;
+            countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
         }
-        requestAnimationFrame(loop);
-      })();
-    }
 
-    // Messages (4 Sept – 25 Sept)
-    const messages = [
-      { date: 'Sept 4', text: 'First surprise unlocked! ❤️', img: 'images/sep4.jpg', audio: 'audio/sep4.mp3' },
-      { date: 'Sept 5', text: 'sikedddddd ❤️', img: 'images/sep5.jpg', audio: 'audio/sep5.mp3' },
-      { date: 'Sept 6', text: 'Your custom memory for Sept 6 ❤️', img: 'images/sep6.jpg', audio: 'audio/sep6.mp3' },
-      { date: 'Sept 7', text: 'Your custom memory for Sept 7 ❤️', img: 'images/sep7.jpg', audio: 'audio/sep7.mp3' },
-      { date: 'Sept 8', text: 'Your custom memory for Sept 8 ❤️', img: 'images/sep8.jpg', audio: 'audio/sep8.mp3' },
-      { date: 'Sept 9', text: 'Your custom memory for Sept 9 ❤️', img: 'images/sep9.jpg', audio: 'audio/sep9.mp3' },
-      { date: 'Sept 10', text: 'Your custom memory for Sept 10 ❤️', img: 'images/sep10.jpg', audio: 'audio/sep10.mp3' },
-      { date: 'Sept 11', text: 'Your custom memory for Sept 11 ❤️', img: 'images/sep11.jpg', audio: 'audio/sep11.mp3' },
-      { date: 'Sept 12', text: 'Your custom memory for Sept 12 ❤️', img: 'images/sep12.jpg', audio: 'audio/sep12.mp3' },
-      { date: 'Sept 13', text: 'Your custom memory for Sept 13 ❤️', img: 'images/sep13.jpg', audio: 'audio/sep13.mp3' },
-      { date: 'Sept 14', text: 'Your custom memory for Sept 14 ❤️', img: 'images/sep14.jpg', audio: 'audio/sep14.mp3' },
-      { date: 'Sept 15', text: 'Your custom memory for Sept 15 ❤️', img: 'images/sep15.jpg', audio: 'audio/sep15.mp3' },
-      { date: 'Sept 16', text: 'Your custom memory for Sept 16 ❤️', img: 'images/sep16.jpg', audio: 'audio/sep16.mp3' },
-      { date: 'Sept 17', text: 'Your custom memory for Sept 17 ❤️', img: 'images/sep17.jpg', audio: 'audio/sep17.mp3' },
-      { date: 'Sept 18', text: 'Your custom memory for Sept 18 ❤️', img: 'images/sep18.jpg', audio: 'audio/sep18.mp3' },
-      { date: 'Sept 19', text: 'Your custom memory for Sept 19 ❤️', img: 'images/sep19.jpg', audio: 'audio/sep19.mp3' },
-      { date: 'Sept 20', text: 'Your custom memory for Sept 20 ❤️', img: 'images/sep20.jpg', audio: 'audio/sep20.mp3' },
-      { date: 'Sept 21', text: 'Your custom memory for Sept 21 ❤️', img: 'images/sep21.jpg', audio: 'audio/sep21.mp3' },
-      { date: 'Sept 22', text: 'Your custom memory for Sept 22 ❤️', img: 'images/sep22.jpg', audio: 'audio/sep22.mp3' },
-      { date: 'Sept 23', text: 'Your custom memory for Sept 23 ❤️', img: 'images/sep23.jpg', audio: 'audio/sep23.mp3' },
-      { date: 'Sept 24', text: 'Your custom memory for Sept 24 ❤️', img: 'images/sep24.jpg', audio: 'audio/sep24.mp3' },
-      { date: 'Sept 25', text: 'Your custom memory for Sept 25 ❤️', img: 'images/sep25.jpg', audio: 'audio/sep25.mp3' }
+        function updateUnlocks() {
+            const now = new Date().getTime();
+            // Calculate how many DAYS have passed since the unlock start date
+            const daysPassed = Math.floor((now - unlockStartDate) / (1000 * 60 * 60 * 24));
+            let newUnlockedCount = daysPassed + 1;
+            
+            // Clamp the value between 0 and the total number of messages
+            newUnlockedCount = Math.max(0, Math.min(newUnlockedCount, messages.length));
+
+            if (newUnlockedCount !== unlockedCount) {
+                unlockedCount = newUnlockedCount;
+                currentIndex = unlockedCount > 0 ? unlockedCount - 1 : 0;
+                updateMessage();
+                if (galleryContainer.style.display !== 'none' && galleryContainer.style.display !== '') {
+                    buildGallery();
+                }
+            }
+        }
+        
+        function updateMessage() {
+            dailyMessageCard.classList.remove('fade-in');
+            // A trick to re-trigger the animation
+            void dailyMessageCard.offsetWidth;
+            dailyMessageCard.classList.add('fade-in');
+
+            if (unlockedCount > 0 && currentIndex < unlockedCount) {
+                const msg = messages[currentIndex];
+                messageEl.innerText = msg.text;
+                imageEl.src = msg.img;
+                imageEl.alt = `Memory for ${msg.date}`;
+                imageEl.style.display = 'block';
+            } else {
+                messageEl.innerText = "A new surprise unlocks soon!";
+                imageEl.style.display = 'none';
+            }
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            prevBtn.disabled = currentIndex <= 0;
+            nextBtn.disabled = currentIndex >= unlockedCount - 1 || unlockedCount === 0;
+        }
+
+        function buildGallery() {
+            galleryContainer.innerHTML = "";
+            messages.forEach((msg, i) => {
+                const card = document.createElement("div");
+                card.className = `card-gradient p-3 rounded-xl shadow-lg transition-all duration-300 ${i >= unlockedCount ? 'opacity-50 filter grayscale' : 'cursor-pointer hover:scale-105'}`;
+                
+                if (i < unlockedCount) {
+                    card.innerHTML = `<img src="${msg.img}" alt="${msg.date}" class="rounded-lg w-full aspect-square object-cover"><p class="text-sm mt-2 font-semibold">${msg.date}</p>`;
+                    card.addEventListener('click', () => {
+                        currentIndex = i;
+                        updateMessage();
+                        galleryContainer.style.display = "none";
+                        toggleGalleryBtn.innerText = "Open Gallery";
+                    });
+                } else {
+                    card.innerHTML = `<div class="w-full aspect-square bg-white/5 rounded-lg flex items-center justify-center"><p class="text-xs">Locked</p></div><p class="text-sm mt-2 font-semibold">${msg.date}</p>`;
+                }
+                galleryContainer.appendChild(card);
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
+        toggleGalleryBtn.addEventListener("click", () => {
+            if (galleryContainer.style.display === "none" || galleryContainer.style.display === "") {
+                buildGallery();
+                galleryContainer.style.display = "grid";
+                toggleGalleryBtn.innerText = "Close Gallery";
+            } else {
+                galleryContainer.style.display = "none";
+                toggleGalleryBtn.innerText = "Open Gallery";
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateMessage();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < unlockedCount - 1) {
+                currentIndex++;
+                updateMessage();
+            }
+        });
+
+        let startX = 0;
+        dailyMessageCard.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; });
+        dailyMessageCard.addEventListener("touchend", (e) => {
+            const endX = e.changedTouches[0].clientX;
+            const diff = endX - startX;
+            if (Math.abs(diff) > 50) { // Swipe threshold
+                if (diff > 0 && !prevBtn.disabled) { // Swipe right
+                    prevBtn.click();
+                } else if (diff < 0 && !nextBtn.disabled) { // Swipe left
+                    nextBtn.click();
+                }
+            }
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" && !prevBtn.disabled) {
+                prevBtn.click();
+            } else if (e.key === "ArrowRight" && !nextBtn.disabled) {
+                nextBtn.click();
+            }
+        });
+        
+        // --- INITIALIZATION ---
+        updateCountdown();
+        updateUnlocks();
+        this.intervalId = setInterval(updateCountdown, 1000);
+        setInterval(updateUnlocks, 60000); // Check for new unlocks every minute
+    });
+
+    // --- STARRY SKY LOGIC ---
+    const skyCanvas = document.getElementById("starrySkyCanvas");
+    const skyCtx = skyCanvas.getContext("2d");
+    let stars = [];
+    let shootingStars = [];
+    const starColors = [
+        { r: 244, g: 114, b: 182 }, // pink-400
+        { r: 192, g: 132, b: 252 }, // purple-400
+        { r: 96, g: 165, b: 250 }   // blue-400
     ];
 
-    // Unlock logic: each midnight IST unlocks next day (4 Sept – 25 Sept)
-    const startDate = new Date('2025-09-04T00:00:00+05:30').getTime();
-    let unlockedCount = 0;
-    let currentIndex = 0; // for swipe navigation
 
-    const messageElement = document.getElementById('message');
-    const imageElement = document.getElementById('image');
-    const audioElement = document.getElementById('audio');
-    const galleryContainer = document.getElementById('galleryContainer');
-    const toggleBtn = document.getElementById('toggleGallery');
-    const toggleSound = document.getElementById('toggleSound');
-
-    function updateUnlocks(){
-      const now = Date.now();
-      const daysPassed = Math.floor((now - startDate)/86400000) + 1;
-      const count = Math.max(0, Math.min(daysPassed, messages.length));
-      if (count !== unlockedCount){
-        unlockedCount = count;
-        currentIndex = Math.max(0, unlockedCount - 1);
-        updateMessage();
-        buildGallery();
-      }
-    }
-
-    function updateMessage(){
-      if (unlockedCount > 0 && currentIndex >= 0 && currentIndex < unlockedCount){
-        const m = messages[currentIndex];
-        messageElement.textContent = m.text;
-        imageElement.style.display = 'block';
-        imageElement.src = m.img; imageElement.alt = `Memory for ${m.date}`;
-        fetch(m.audio, { method: 'HEAD' })
-          .then(r => { if(r.ok){ audioElement.src=m.audio; audioElement.style.display='block'; } else { audioElement.style.display='none'; } })
-          .catch(()=>{ audioElement.style.display='none'; });
-      } else {
-        messageElement.textContent = 'Surprises start from Sept 4 at 12:00 AM IST.';
-        imageElement.style.display = 'none';
-        audioElement.style.display = 'none';
-      }
-    }
-
-    function buildGallery(){
-      galleryContainer.innerHTML = '';
-      for (let i=0;i<messages.length;i++){
-        const card = document.createElement('div');
-        card.className = 'gallery-card';
-        if (i < unlockedCount){
-          card.innerHTML = `<p><strong>${messages[i].date}:</strong> ${messages[i].text}</p><img src="${messages[i].img}" alt="${messages[i].date}">`;
-        } else {
-          card.classList.add('locked');
-          card.innerHTML = `<p><strong>${messages[i].date}:</strong> Unlocks later</p>`;
+    function setupSky() {
+        skyCanvas.width = window.innerWidth;
+        skyCanvas.height = window.innerHeight;
+        stars = [];
+        for (let i = 0; i < 400; i++) {
+            stars.push({
+                x: Math.random() * skyCanvas.width,
+                y: Math.random() * skyCanvas.height,
+                radius: Math.random() * 1.5,
+                alpha: Math.random(),
+                alphaSpeed: (Math.random() - 0.5) * 0.015,
+                color: starColors[Math.floor(Math.random() * starColors.length)]
+            });
         }
-        galleryContainer.appendChild(card);
-      }
     }
 
-    setInterval(updateUnlocks, 60000);
-    updateUnlocks();
+    function drawSky() {
+        skyCtx.clearRect(0, 0, skyCanvas.width, skyCanvas.height);
+
+        // Draw twinkling stars
+        stars.forEach(star => {
+            star.alpha += star.alphaSpeed;
+            if (star.alpha <= 0 || star.alpha >= 1) {
+                star.alphaSpeed *= -1;
+            }
+            skyCtx.beginPath();
+            skyCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            const color = star.color;
+            skyCtx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${star.alpha})`;
+            skyCtx.fill();
+        });
+
+        // Create and draw shooting stars
+        if (Math.random() < 0.005) { // Chance to create a new shooting star
+             shootingStars.push({
+                x: Math.random() * skyCanvas.width,
+                y: Math.random() * skyCanvas.height / 2,
+                len: Math.random() * 80 + 10,
+                speed: Math.random() * 5 + 5,
+                angle: Math.PI / 4, // 45 degree angle
+                life: 1,
+                color: starColors[Math.floor(Math.random() * starColors.length)]
+            });
+        }
+
+        shootingStars.forEach((ss, index) => {
+            ss.x += ss.speed;
+            ss.y += ss.speed;
+            ss.life -= 0.01;
+
+            if (ss.life <= 0) {
+                shootingStars.splice(index, 1);
+            }
+
+            skyCtx.beginPath();
+            const grad = skyCtx.createLinearGradient(ss.x, ss.y, ss.x - ss.len, ss.y - ss.len);
+            const ssColor = ss.color;
+            grad.addColorStop(0, `rgba(${ssColor.r}, ${ssColor.g}, ${ssColor.b}, ${ss.life})`);
+            grad.addColorStop(1, `rgba(${ssColor.r}, ${ssColor.g}, ${ssColor.b}, 0)`);
+            skyCtx.strokeStyle = grad;
+            skyCtx.moveTo(ss.x, ss.y);
+            skyCtx.lineTo(ss.x - ss.len, ss.y - ss.len);
+            skyCtx.stroke();
+        });
+
+        requestAnimationFrame(drawSky);
+    }
+    
+    window.addEventListener('resize', setupSky);
+    setupSky();
+    drawSky();
+
+
+    // --- CONFETTI LOGIC ---
+    function launchConfetti() {
+        const canvas = document.getElementById("confettiCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const pieces = [];
+        const numberOfPieces = 200;
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+
+        function createPiece() {
+            return {
+                x: Math.random() * canvas.width,
+                y: -20,
+                r: Math.random() * 8 + 5,
+                dx: Math.random() * 2 - 1,
+                dy: Math.random() * 4 + 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                opacity: 1,
+                tilt: Math.random() * 10 - 5,
+                tiltAngle: 0,
+            };
+        }
+
+        for (let i = 0; i < numberOfPieces; i++) {
+            pieces.push(createPiece());
+        }
+
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pieces.forEach((p, i) => {
+                p.x += p.dx;
+                p.y += p.dy;
+                p.tiltAngle += p.tilt / 20;
+                p.opacity -= 0.005;
+
+                ctx.save();
+                ctx.globalAlpha = p.opacity;
+                ctx.translate(p.x + p.r / 2, p.y + p.r / 2);
+                ctx.rotate(p.tiltAngle);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r);
+                ctx.restore();
+
+                if (p.y > canvas.height || p.opacity <= 0) {
+                    pieces[i] = createPiece();
+                }
+            });
+            requestAnimationFrame(loop);
+        }
+        loop();
+    }
+  </script>
+</body>
+</html>
+
+
+
