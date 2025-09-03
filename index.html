@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Birthday Countdown</title>
+  <title>Mahak's Birthday Countdown</title>
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -17,6 +17,11 @@
       background: linear-gradient(135deg, #f9a8d4, #f472b6);
       color: #fff;
       text-align: center;
+      transition: background 0.5s, color 0.5s;
+    }
+    body.dark {
+      background: linear-gradient(135deg, #1e1e1e, #333);
+      color: #f5f5f5;
     }
     h1 {
       font-size: 2rem;
@@ -38,6 +43,10 @@
       max-width: 100%;
       border-radius: 12px;
       margin-top: 10px;
+    }
+    audio {
+      margin-top: 10px;
+      width: 100%;
     }
     #galleryContainer {
       display: none;
@@ -84,28 +93,35 @@
 </head>
 <body>
   <h1>Mahak's 23rd Birthday 🩵</h1>
-  <div id="countdown"></div>
+  <div id="countdown" aria-live="polite"></div>
 
   <div class="card" id="dailyMessage">
     <h2>Today’s Surprise</h2>
-    <p id="message"></p>
-    <img id="image" src="" alt="" />
+    <p id="message" aria-live="polite"></p>
+    <img id="image" src="" alt="Today's memory" onerror="this.style.display='none'" />
+    <audio id="audio" controls style="display:none;"></audio>
   </div>
 
   <button id="toggleGallery">Open Memory Gallery</button>
+  <button id="themeToggle">Toggle Dark/Light</button>
   <div id="galleryContainer"></div>
+
+  <canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+
+  <audio id="toggleSound" src="sounds/toggle.mp3" preload="auto"></audio>
 
   <script>
     // Countdown Logic
     const countdown = document.getElementById("countdown");
-    const birthday = new Date("2025-09-25T00:00:00").getTime();
+    const birthday = new Date("2025-09-25T00:00:00+05:30").getTime();
 
     setInterval(() => {
       const now = new Date().getTime();
       const diff = birthday - now;
 
       if (diff <= 0) {
-        countdown.innerHTML = "Happy Birthday!";
+        countdown.innerHTML = "🎉 Happy Birthday Mahak! 🎉";
+        launchConfetti();
         return;
       }
 
@@ -117,38 +133,63 @@
       countdown.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }, 1000);
 
-    // Preloaded Messages & Images (Sept 4 to Sept 25)
+    // Messages Sept 4–25
     const messages = [];
     for (let day = 4; day <= 25; day++) {
       messages.push({
         date: `Sept ${day}`,
         text: `Memory for Sept ${day} (replace with your custom text)`,
-        img: `images/sep${day}.jpg`
+        img: `images/sep${day}.jpg`,
+        audio: `audio/sep${day}.mp3` // optional, if file exists
       });
     }
 
-    // Unlock logic: starting 4 Sept 2:15 AM IST, each minute unlocks next pic
+    // Unlock logic IST
     const unlockStart = new Date("2025-09-04T02:15:00+05:30").getTime();
-    const now = new Date().getTime();
-    let unlockedCount = Math.floor((now - unlockStart) / (1000 * 60)) + 1;
-
-    if (unlockedCount < 0) unlockedCount = 0;
-    if (unlockedCount > messages.length) unlockedCount = messages.length;
+    let unlockedCount = 0;
 
     const messageElement = document.getElementById("message");
     const imageElement = document.getElementById("image");
+    const audioElement = document.getElementById("audio");
     const galleryContainer = document.getElementById("galleryContainer");
+    const toggleBtn = document.getElementById("toggleGallery");
+    const toggleSound = document.getElementById("toggleSound");
 
-    // Show latest unlocked message
-    if (unlockedCount > 0) {
-      const idx = unlockedCount - 1;
-      messageElement.innerText = messages[idx].text;
-      imageElement.src = messages[idx].img;
-    } else {
-      messageElement.innerText = "Surprises start from Sept 4 at 2:15 AM IST.";
+    function updateUnlocks() {
+      const now = new Date().getTime();
+      let count = Math.floor((now - unlockStart) / (1000 * 60)) + 1;
+      count = Math.max(0, Math.min(count, messages.length));
+
+      if (count !== unlockedCount) {
+        unlockedCount = count;
+        localStorage.setItem("unlockedCount", unlockedCount);
+        updateMessage();
+        buildGallery();
+      }
     }
 
-    // Prepare gallery content
+    function updateMessage() {
+      if (unlockedCount > 0) {
+        const idx = unlockedCount - 1;
+        messageElement.innerText = messages[idx].text;
+        imageElement.src = messages[idx].img;
+        imageElement.alt = `Memory for ${messages[idx].date}`;
+
+        // Check audio
+        fetch(messages[idx].audio, { method: 'HEAD' })
+          .then(res => {
+            if (res.ok) {
+              audioElement.src = messages[idx].audio;
+              audioElement.style.display = "block";
+            } else {
+              audioElement.style.display = "none";
+            }
+          }).catch(() => audioElement.style.display = "none");
+      } else {
+        messageElement.innerText = "Surprises start from Sept 4 at 2:15 AM IST.";
+      }
+    }
+
     function buildGallery() {
       galleryContainer.innerHTML = "";
       for (let i = 0; i < messages.length; i++) {
@@ -156,7 +197,7 @@
         card.className = "gallery-card";
 
         if (i < unlockedCount) {
-          card.innerHTML = `<p><strong>${messages[i].date}:</strong> ${messages[i].text}</p><img src="${messages[i].img}" alt="memory">`;
+          card.innerHTML = `<p><strong>${messages[i].date}:</strong> ${messages[i].text}</p><img src="${messages[i].img}" alt="${messages[i].date}">`;
         } else {
           card.classList.add("locked");
           card.innerHTML = `<p><strong>${messages[i].date}:</strong> Unlocks later</p>`;
@@ -166,9 +207,14 @@
       }
     }
 
-    // Toggle button for gallery
-    const toggleBtn = document.getElementById("toggleGallery");
+    // Auto-refresh every minute
+    setInterval(updateUnlocks, 60000);
+    updateUnlocks(); // run at start
+
+    // Gallery toggle with sound
     toggleBtn.addEventListener("click", () => {
+      toggleSound.currentTime = 0;
+      toggleSound.play();
       if (galleryContainer.style.display === "none" || galleryContainer.style.display === "") {
         buildGallery();
         galleryContainer.style.display = "flex";
@@ -178,6 +224,54 @@
         toggleBtn.innerText = "Open Memory Gallery";
       }
     });
+
+    // Dark/Light toggle
+    const themeToggle = document.getElementById("themeToggle");
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    });
+
+    // Confetti on birthday
+    function launchConfetti() {
+      const canvas = document.getElementById("confettiCanvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const pieces = Array.from({ length: 200 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 6 + 4,
+        dx: Math.random() - 0.5,
+        dy: Math.random() + 1,
+        color: `hsl(${Math.random() * 360},100%,50%)`
+      }));
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        });
+      }
+
+      function update() {
+        pieces.forEach(p => {
+          p.x += p.dx;
+          p.y += p.dy;
+          if (p.y > canvas.height) p.y = 0;
+        });
+      }
+
+      function loop() {
+        draw();
+        update();
+        requestAnimationFrame(loop);
+      }
+      loop();
+    }
   </script>
 </body>
 </html>
