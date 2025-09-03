@@ -39,8 +39,8 @@
       border-radius: 12px;
       margin-top: 10px;
     }
-    #gallery {
-      display: flex;
+    #galleryContainer {
+      display: none;
       flex-wrap: wrap;
       justify-content: center;
       gap: 15px;
@@ -61,6 +61,20 @@
       opacity: 0.5;
       font-style: italic;
     }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.3);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: rgba(255,255,255,0.5);
+    }
     @media (max-width: 600px) {
       h1 { font-size: 1.5rem; }
       #countdown { font-size: 1.2rem; }
@@ -78,8 +92,8 @@
     <img id="image" src="" alt="" />
   </div>
 
-  <h2>Memory Gallery</h2>
-  <div id="gallery"></div>
+  <button id="toggleGallery">Open Memory Gallery</button>
+  <div id="galleryContainer"></div>
 
   <script>
     // Countdown Logic
@@ -123,7 +137,7 @@
 
     const messageElement = document.getElementById("message");
     const imageElement = document.getElementById("image");
-    const gallery = document.getElementById("gallery");
+    const galleryContainer = document.getElementById("galleryContainer");
 
     // Show latest unlocked message
     if (unlockedCount > 0) {
@@ -134,20 +148,36 @@
       messageElement.innerText = "Surprises start from Sept 4 at 2:15 AM IST.";
     }
 
-    // Build gallery of all memories (locked/unlocked)
-    for (let i = 0; i < messages.length; i++) {
-      const card = document.createElement("div");
-      card.className = "gallery-card";
+    // Prepare gallery content
+    function buildGallery() {
+      galleryContainer.innerHTML = "";
+      for (let i = 0; i < messages.length; i++) {
+        const card = document.createElement("div");
+        card.className = "gallery-card";
 
-      if (i < unlockedCount) {
-        card.innerHTML = `<p><strong>${messages[i].date}:</strong> ${messages[i].text}</p><img src="${messages[i].img}" alt="memory">`;
-      } else {
-        card.classList.add("locked");
-        card.innerHTML = `<p><strong>${messages[i].date}:</strong> Unlocks later</p>`;
+        if (i < unlockedCount) {
+          card.innerHTML = `<p><strong>${messages[i].date}:</strong> ${messages[i].text}</p><img src="${messages[i].img}" alt="memory">`;
+        } else {
+          card.classList.add("locked");
+          card.innerHTML = `<p><strong>${messages[i].date}:</strong> Unlocks later</p>`;
+        }
+
+        galleryContainer.appendChild(card);
       }
-
-      gallery.appendChild(card);
     }
+
+    // Toggle button for gallery
+    const toggleBtn = document.getElementById("toggleGallery");
+    toggleBtn.addEventListener("click", () => {
+      if (galleryContainer.style.display === "none" || galleryContainer.style.display === "") {
+        buildGallery();
+        galleryContainer.style.display = "flex";
+        toggleBtn.innerText = "Close Memory Gallery";
+      } else {
+        galleryContainer.style.display = "none";
+        toggleBtn.innerText = "Open Memory Gallery";
+      }
+    });
   </script>
 </body>
 </html>
