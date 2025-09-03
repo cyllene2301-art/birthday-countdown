@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mahak's Birthday Countdown</title>
   <style>
+    :root { --card-bg: rgba(255,255,255,0.15); }
     body {
       font-family: 'Poppins', sans-serif;
       display: flex;
@@ -14,40 +15,30 @@
       min-height: 100vh;
       margin: 0;
       padding: 20px;
-      background: linear-gradient(135deg, #f9a8d4, #f472b6);
       color: #fff;
       text-align: center;
-      transition: background 0.5s, color 0.5s;
+      overflow: hidden; /* star canvas ke liye */
+      background: #000;
     }
-    body.dark {
-      background: linear-gradient(135deg, #1e1e1e, #333);
-      color: #f5f5f5;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-    #countdown {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-    }
+    body.dark { color: #f5f5f5; }
+
+    h1, #countdown, .card, button, #galleryContainer { position: relative; z-index: 3; }
+
+    h1 { font-size: 2rem; margin: 10px 0; }
+    #countdown { font-size: 1.4rem; margin-bottom: 16px; }
+
     .card {
-      background: rgba(255,255,255,0.2);
+      background: var(--card-bg);
       border-radius: 16px;
-      padding: 15px;
+      padding: 16px;
       margin: 10px auto;
-      max-width: 350px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      max-width: 380px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+      backdrop-filter: blur(6px);
     }
-    img {
-      max-width: 100%;
-      border-radius: 12px;
-      margin-top: 10px;
-    }
-    audio {
-      margin-top: 10px;
-      width: 100%;
-    }
+    img { max-width: 100%; border-radius: 12px; margin-top: 10px; }
+    audio { margin-top: 10px; width: 100%; }
+
     #galleryContainer {
       display: none;
       flex-wrap: wrap;
@@ -56,42 +47,48 @@
       margin-top: 20px;
     }
     .gallery-card {
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.10);
       border-radius: 16px;
       padding: 10px;
-      width: 160px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      width: 170px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+      backdrop-filter: blur(4px);
     }
-    .gallery-card img {
-      width: 100%;
-      border-radius: 10px;
-    }
-    .locked {
-      opacity: 0.5;
-      font-style: italic;
-    }
+    .gallery-card img { width: 100%; border-radius: 10px; }
+    .locked { opacity: 0.55; font-style: italic; }
+
     button {
-      margin-top: 20px;
+      margin-top: 14px;
       padding: 10px 20px;
       font-size: 1rem;
       border: none;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.3);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.25);
       color: #fff;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: transform .15s ease, background .3s ease;
     }
-    button:hover {
-      background: rgba(255,255,255,0.5);
+    button:hover { background: rgba(255,255,255,0.4); transform: translateY(-1px); }
+
+    /* Background canvases */
+    #starCanvas, #confettiCanvas {
+      position: fixed; inset: 0; width: 100%; height: 100%; display: block;
     }
+    #starCanvas { z-index: 1; background: #000; }
+    #confettiCanvas { z-index: 4; pointer-events: none; }
+
     @media (max-width: 600px) {
-      h1 { font-size: 1.5rem; }
-      #countdown { font-size: 1.2rem; }
-      .gallery-card { width: 100%; max-width: 300px; }
+      h1 { font-size: 1.6rem; }
+      #countdown { font-size: 1.1rem; }
+      .gallery-card { width: 100%; max-width: 320px; }
     }
   </style>
 </head>
 <body>
+  <!-- Background Canvases -->
+  <canvas id="starCanvas" aria-hidden="true"></canvas>
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
+
   <h1>Mahak's 23rd Birthday 🩵</h1>
   <div id="countdown" aria-live="polite"></div>
 
@@ -106,213 +103,229 @@
   <button id="themeToggle">Toggle Dark/Light</button>
   <div id="galleryContainer"></div>
 
-  <canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
-
   <audio id="toggleSound" src="sounds/toggle.mp3" preload="auto"></audio>
 
+  <!-- Starry Sky + Shooting Stars -->
   <script>
-    // Countdown Logic
-    const countdown = document.getElementById("countdown");
-    const birthday = new Date("2025-09-25T00:00:00+05:30").getTime();
+    const starCanvas = document.getElementById('starCanvas');
+    const sctx = starCanvas.getContext('2d');
+    function resizeStars(){ starCanvas.width = innerWidth; starCanvas.height = innerHeight; }
+    resizeStars(); addEventListener('resize', resizeStars);
 
-    setInterval(() => {
-      const now = new Date().getTime();
-      const diff = birthday - now;
+    // Dense twinkling stars with natural colors
+    const STAR_COUNT = 320;
+    const STAR_COLORS = ['#ffffff','#a5b4fc','#c084fc','#60a5fa']; // white, lavender, purple, blue
+    const stars = Array.from({length: STAR_COUNT}, () => ({
+      x: Math.random()*starCanvas.width,
+      y: Math.random()*starCanvas.height,
+      r: Math.random()*1.3 + 0.3,
+      a: Math.random(), // alpha
+      da: (Math.random()*0.02) * (Math.random()<0.5?-1:1),
+      color: STAR_COLORS[(Math.random()*STAR_COLORS.length)|0]
+    }));
 
-      if (diff <= 0) {
-        countdown.innerHTML = "🎉 Happy Birthday Mahak! 🎉";
-        launchConfetti();
-        return;
+    // Shooting star spawner with variable timing
+    function spawnShootingStar(){
+      const angle = Math.PI/4; // 45deg
+      let x = Math.random()*starCanvas.width*0.7; // left-ish spawn
+      let y = Math.random()*starCanvas.height*0.5; // upper half
+      let len = Math.random()*90 + 60;
+      const speed = 8; // fast
+      const trailColor = ['#ffffff','#93c5fd','#a78bfa','#f472b6'][(Math.random()*4)|0];
+
+      function tick(){
+        // light blur trail
+        sctx.globalCompositeOperation = 'lighter';
+        sctx.beginPath();
+        sctx.moveTo(x, y);
+        sctx.lineTo(x - len*Math.cos(angle), y - len*Math.sin(angle));
+        sctx.strokeStyle = trailColor;
+        sctx.lineWidth = 2;
+        sctx.stroke();
+        sctx.globalCompositeOperation = 'source-over';
+
+        x += speed*Math.cos(angle);
+        y += speed*Math.sin(angle);
+        len *= 0.94;
+        if (len > 1) requestAnimationFrame(tick);
       }
+      tick();
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      countdown.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    }, 1000);
-
-    // Messages Sept 4–25
-    const messages = [];
-    for (let day = 4; day <= 25; day++) {
-      messages.push({
-        date: `Sept ${day}`,
-        text: `Memory for Sept ${day} (replace with your custom text)`,
-        img: `images/sep${day}.jpg`,
-        audio: `audio/sep${day}.mp3` // optional, if file exists
-      });
+      // schedule next with random 2–5s delay
+      setTimeout(spawnShootingStar, 2000 + Math.random()*3000);
     }
 
-    // Unlock logic IST
-    const unlockStart = new Date("2025-09-04T02:15:00+05:30").getTime();
+    function renderStars(){
+      sctx.clearRect(0,0,starCanvas.width, starCanvas.height);
+      for(const s of stars){
+        s.a += s.da; if(s.a < 0 || s.a > 1) s.da *= -1;
+        sctx.globalAlpha = Math.max(0, Math.min(1, s.a));
+        sctx.fillStyle = s.color;
+        sctx.beginPath(); sctx.arc(s.x, s.y, s.r, 0, Math.PI*2); sctx.fill();
+      }
+      sctx.globalAlpha = 1;
+      requestAnimationFrame(renderStars);
+    }
+    renderStars();
+    setTimeout(spawnShootingStar, 2500 + Math.random()*1500);
+  </script>
+
+  <!-- App Logic (Countdown + Unlocks + Gallery + Swipe) -->
+  <script>
+    // Countdown to birthday (IST)
+    const countdown = document.getElementById('countdown');
+    const birthday = new Date('2025-09-25T00:00:00+05:30').getTime();
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cctx = confettiCanvas.getContext('2d');
+    function resizeConfetti(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+    resizeConfetti(); addEventListener('resize', resizeConfetti);
+
+    let confettiLaunched = false;
+    setInterval(() => {
+      const now = Date.now();
+      const diff = birthday - now;
+      if (diff <= 0) {
+        countdown.textContent = '🎉 Happy Birthday Mahak! 🎉';
+        if (!confettiLaunched) { confettiLaunched = true; launchConfetti(); }
+        return;
+      }
+      const d = Math.floor(diff/86400000);
+      const h = Math.floor((diff%86400000)/3600000);
+      const m = Math.floor((diff%3600000)/60000);
+      const s = Math.floor((diff%60000)/1000);
+      countdown.textContent = `${d}d ${h}h ${m}m ${s}s`;
+    }, 1000);
+
+    function launchConfetti(){
+      const pieces = Array.from({length: 220}, ()=>({
+        x: Math.random()*confettiCanvas.width,
+        y: Math.random()*confettiCanvas.height,
+        r: Math.random()*6+3,
+        dx: (Math.random()-0.5)*1.5,
+        dy: Math.random()*2+1,
+        color: `hsl(${Math.random()*360},100%,50%)`
+      }));
+      (function loop(){
+        cctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+        for(const p of pieces){
+          cctx.beginPath(); cctx.arc(p.x,p.y,p.r,0,Math.PI*2); cctx.fillStyle=p.color; cctx.fill();
+          p.x+=p.dx; p.y+=p.dy; if(p.y>confettiCanvas.height) p.y=0;
+        }
+        requestAnimationFrame(loop);
+      })();
+    }
+
+    // Messages (5 Sept – 25 Sept)
+    const messages = [
+      { date: 'Sept 5', text: 'sikedddddd ❤️', img: 'images/sep5.jpg', audio: 'audio/sep5.mp3' },
+      { date: 'Sept 6', text: 'Your custom memory for Sept 6 ❤️', img: 'images/sep6.jpg', audio: 'audio/sep6.mp3' },
+      { date: 'Sept 7', text: 'Your custom memory for Sept 7 ❤️', img: 'images/sep7.jpg', audio: 'audio/sep7.mp3' },
+      { date: 'Sept 8', text: 'Your custom memory for Sept 8 ❤️', img: 'images/sep8.jpg', audio: 'audio/sep8.mp3' },
+      { date: 'Sept 9', text: 'Your custom memory for Sept 9 ❤️', img: 'images/sep9.jpg', audio: 'audio/sep9.mp3' },
+      { date: 'Sept 10', text: 'Your custom memory for Sept 10 ❤️', img: 'images/sep10.jpg', audio: 'audio/sep10.mp3' },
+      { date: 'Sept 11', text: 'Your custom memory for Sept 11 ❤️', img: 'images/sep11.jpg', audio: 'audio/sep11.mp3' },
+      { date: 'Sept 12', text: 'Your custom memory for Sept 12 ❤️', img: 'images/sep12.jpg', audio: 'audio/sep12.mp3' },
+      { date: 'Sept 13', text: 'Your custom memory for Sept 13 ❤️', img: 'images/sep13.jpg', audio: 'audio/sep13.mp3' },
+      { date: 'Sept 14', text: 'Your custom memory for Sept 14 ❤️', img: 'images/sep14.jpg', audio: 'audio/sep14.mp3' },
+      { date: 'Sept 15', text: 'Your custom memory for Sept 15 ❤️', img: 'images/sep15.jpg', audio: 'audio/sep15.mp3' },
+      { date: 'Sept 16', text: 'Your custom memory for Sept 16 ❤️', img: 'images/sep16.jpg', audio: 'audio/sep16.mp3' },
+      { date: 'Sept 17', text: 'Your custom memory for Sept 17 ❤️', img: 'images/sep17.jpg', audio: 'audio/sep17.mp3' },
+      { date: 'Sept 18', text: 'Your custom memory for Sept 18 ❤️', img: 'images/sep18.jpg', audio: 'audio/sep18.mp3' },
+      { date: 'Sept 19', text: 'Your custom memory for Sept 19 ❤️', img: 'images/sep19.jpg', audio: 'audio/sep19.mp3' },
+      { date: 'Sept 20', text: 'Your custom memory for Sept 20 ❤️', img: 'images/sep20.jpg', audio: 'audio/sep20.mp3' },
+      { date: 'Sept 21', text: 'Your custom memory for Sept 21 ❤️', img: 'images/sep21.jpg', audio: 'audio/sep21.mp3' },
+      { date: 'Sept 22', text: 'Your custom memory for Sept 22 ❤️', img: 'images/sep22.jpg', audio: 'audio/sep22.mp3' },
+      { date: 'Sept 23', text: 'Your custom memory for Sept 23 ❤️', img: 'images/sep23.jpg', audio: 'audio/sep23.mp3' },
+      { date: 'Sept 24', text: 'Your custom memory for Sept 24 ❤️', img: 'images/sep24.jpg', audio: 'audio/sep24.mp3' },
+      { date: 'Sept 25', text: 'Your custom memory for Sept 25 ❤️', img: 'images/sep25.jpg', audio: 'audio/sep25.mp3' }
+    ];
+
+    // Unlock logic: each midnight IST unlocks next day (5 Sept – 25 Sept)
+    const startDate = new Date('2025-09-05T00:00:00+05:30').getTime();
     let unlockedCount = 0;
     let currentIndex = 0; // for swipe navigation
 
-    const messageElement = document.getElementById("message");
-    const imageElement = document.getElementById("image");
-    const audioElement = document.getElementById("audio");
-    const galleryContainer = document.getElementById("galleryContainer");
-    const toggleBtn = document.getElementById("toggleGallery");
-    const toggleSound = document.getElementById("toggleSound");
+    const messageElement = document.getElementById('message');
+    const imageElement = document.getElementById('image');
+    const audioElement = document.getElementById('audio');
+    const galleryContainer = document.getElementById('galleryContainer');
+    const toggleBtn = document.getElementById('toggleGallery');
+    const toggleSound = document.getElementById('toggleSound');
 
-    function updateUnlocks() {
-      const now = new Date().getTime();
-      let count = Math.floor((now - unlockStart) / (1000 * 60)) + 1;
-      count = Math.max(0, Math.min(count, messages.length));
-
-      if (count !== unlockedCount) {
+    function updateUnlocks(){
+      const now = Date.now();
+      const daysPassed = Math.floor((now - startDate)/86400000) + 1; // +1 so day 1 unlocks exactly at midnight
+      const count = Math.max(0, Math.min(daysPassed, messages.length));
+      if (count !== unlockedCount){
         unlockedCount = count;
-        localStorage.setItem("unlockedCount", unlockedCount);
-        currentIndex = unlockedCount - 1; // reset to latest
+        currentIndex = Math.max(0, unlockedCount - 1); // latest unlocked
         updateMessage();
         buildGallery();
       }
     }
 
-    function updateMessage() {
-      if (unlockedCount > 0 && currentIndex >= 0 && currentIndex < unlockedCount) {
-        const idx = currentIndex;
-        messageElement.innerText = messages[idx].text;
-        imageElement.src = messages[idx].img;
-        imageElement.alt = `Memory for ${messages[idx].date}`;
-
-        // Check audio
-        fetch(messages[idx].audio, { method: 'HEAD' })
-          .then(res => {
-            if (res.ok) {
-              audioElement.src = messages[idx].audio;
-              audioElement.style.display = "block";
-            } else {
-              audioElement.style.display = "none";
-            }
-          }).catch(() => audioElement.style.display = "none");
+    function updateMessage(){
+      if (unlockedCount > 0 && currentIndex >= 0 && currentIndex < unlockedCount){
+        const m = messages[currentIndex];
+        messageElement.textContent = m.text;
+        imageElement.style.display = 'block';
+        imageElement.src = m.img; imageElement.alt = `Memory for ${m.date}`;
+        // Audio (optional if exists)
+        fetch(m.audio, { method: 'HEAD' })
+          .then(r => { if(r.ok){ audioElement.src=m.audio; audioElement.style.display='block'; } else { audioElement.style.display='none'; } })
+          .catch(()=>{ audioElement.style.display='none'; });
       } else {
-        messageElement.innerText = "Surprises start from Sept 4 at 2:15 AM IST.";
+        messageElement.textContent = 'Surprises start from Sept 5 at 12:00 AM IST.';
+        imageElement.style.display = 'none';
+        audioElement.style.display = 'none';
       }
     }
 
-    function buildGallery() {
-      galleryContainer.innerHTML = "";
-      for (let i = 0; i < messages.length; i++) {
-        const card = document.createElement("div");
-        card.className = "gallery-card";
-
-        if (i < unlockedCount) {
+    function buildGallery(){
+      galleryContainer.innerHTML = '';
+      for (let i=0;i<messages.length;i++){
+        const card = document.createElement('div');
+        card.className = 'gallery-card';
+        if (i < unlockedCount){
           card.innerHTML = `<p><strong>${messages[i].date}:</strong> ${messages[i].text}</p><img src="${messages[i].img}" alt="${messages[i].date}">`;
         } else {
-          card.classList.add("locked");
+          card.classList.add('locked');
           card.innerHTML = `<p><strong>${messages[i].date}:</strong> Unlocks later</p>`;
         }
-
         galleryContainer.appendChild(card);
       }
     }
 
-    // Auto-refresh every minute
+    // Auto-refresh unlocks every minute
     setInterval(updateUnlocks, 60000);
-    updateUnlocks(); // run at start
+    updateUnlocks(); // initial
 
     // Gallery toggle with sound
-    toggleBtn.addEventListener("click", () => {
-      toggleSound.currentTime = 0;
-      toggleSound.play();
-      if (galleryContainer.style.display === "none" || galleryContainer.style.display === "") {
-        buildGallery();
-        galleryContainer.style.display = "flex";
-        toggleBtn.innerText = "Close Memory Gallery";
-      } else {
-        galleryContainer.style.display = "none";
-        toggleBtn.innerText = "Open Memory Gallery";
-      }
+    toggleBtn.addEventListener('click', () => {
+      try{ toggleSound.currentTime = 0; toggleSound.play(); }catch(e){}
+      const open = galleryContainer.style.display === 'flex';
+      if (!open){ buildGallery(); galleryContainer.style.display = 'flex'; toggleBtn.textContent = 'Close Memory Gallery'; }
+      else { galleryContainer.style.display = 'none'; toggleBtn.textContent = 'Open Memory Gallery'; }
     });
 
     // Dark/Light toggle
-    const themeToggle = document.getElementById("themeToggle");
-    themeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
+    document.getElementById('themeToggle').addEventListener('click', ()=>{
+      document.body.classList.toggle('dark');
     });
 
-    // Confetti on birthday
-    function launchConfetti() {
-      const canvas = document.getElementById("confettiCanvas");
-      const ctx = canvas.getContext("2d");
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const pieces = Array.from({ length: 200 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 6 + 4,
-        dx: Math.random() - 0.5,
-        dy: Math.random() + 1,
-        color: `hsl(${Math.random() * 360},100%,50%)`
-      }));
-
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pieces.forEach(p => {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-        });
-      }
-
-      function update() {
-        pieces.forEach(p => {
-          p.x += p.dx;
-          p.y += p.dy;
-          if (p.y > canvas.height) p.y = 0;
-        });
-      }
-
-      function loop() {
-        draw();
-        update();
-        requestAnimationFrame(loop);
-      }
-      loop();
-    }
-
-    // Swipe + arrow navigation for dailyMessage
-    let startX = 0;
-    const dailyMessageCard = document.getElementById("dailyMessage");
-
-    dailyMessageCard.addEventListener("touchstart", (e) => {
-      startX = e.touches[0].clientX;
-    });
-
-    dailyMessageCard.addEventListener("touchend", (e) => {
-      const endX = e.changedTouches[0].clientX;
-      const diff = endX - startX;
-      if (Math.abs(diff) > 50) {
-        if (diff > 0) {
-          // swipe right → previous
-          if (currentIndex > 0) {
-            currentIndex--;
-            updateMessage();
-          }
-        } else {
-          // swipe left → next
-          if (currentIndex < unlockedCount - 1) {
-            currentIndex++;
-            updateMessage();
-          }
-        }
+    // Swipe + keyboard navigation on Today card
+    let startX = 0; const dailyMessageCard = document.getElementById('dailyMessage');
+    dailyMessageCard.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+    dailyMessageCard.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 50){
+        if (dx > 0 && currentIndex > 0){ currentIndex--; updateMessage(); }
+        else if (dx < 0 && currentIndex < unlockedCount-1){ currentIndex++; updateMessage(); }
       }
     });
-
-    // Keyboard arrow support
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowLeft" && currentIndex > 0) {
-        currentIndex--;
-        updateMessage();
-      }
-      if (e.key === "ArrowRight" && currentIndex < unlockedCount - 1) {
-        currentIndex++;
-        updateMessage();
-      }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' && currentIndex > 0){ currentIndex--; updateMessage(); }
+      if (e.key === 'ArrowRight' && currentIndex < unlockedCount-1){ currentIndex++; updateMessage(); }
     });
   </script>
 </body>
