@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Birthday Countdown</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #f9a8d4, #f472b6);
+      color: #fff;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    #countdown {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 350px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+    #gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .gallery-card {
+      background: rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 10px;
+      width: 160px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .gallery-card img {
+      width: 100%;
+      border-radius: 10px;
+    }
+    .locked {
+      opacity: 0.5;
+      font-style: italic;
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5rem; }
+      #countdown { font-size: 1.2rem; }
+      .gallery-card { width: 100%; max-width: 300px; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Countdown to My Friend's Birthday 🎉</h1>
+  <div id="countdown"></div>
+
+  <div class="card" id="dailyMessage">
+    <h2>💌 Today’s Surprise</h2>
+    <p id="message"></p>
+    <img id="image" src="" alt="" />
+  </div>
+
+  <h2>📸 Memory Gallery</h2>
+  <div id="gallery"></div>
+
+  <script>
+    // Countdown Logic
+    const countdown = document.getElementById("countdown");
+    const birthday = new Date("2025-09-25T00:00:00").getTime();
+
+    setInterval(() => {
+      const now = new Date().getTime();
+      const diff = birthday - now;
+
+      if (diff <= 0) {
+        countdown.innerHTML = "🎂 Happy Birthday! 🎂";
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      countdown.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }, 1000);
+
+    // Preloaded Messages & Images (Sept 4 to Sept 25)
+    const messages = [];
+    for (let day = 4; day <= 25; day++) {
+      messages.push({
+        date: `Sept ${day}`,
+        text: `Memory for Sept ${day} 💖 (replace with your custom text)`,
+        img: `images/sep${day}.jpg`
+      });
+    }
+
+    // Start unlocking from 4th Sept (midnight)
+    const startDate = new Date("2025-09-04T00:00:00");
+    const today = new Date();
+
+    // Calculate index based on date difference (ignoring time of day)
+    const diffDays = Math.floor((today.setHours(0,0,0,0) - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const todayIndex = diffDays;
+
+    const messageElement = document.getElementById("message");
+    const imageElement = document.getElementById("image");
+    const gallery = document.getElementById("gallery");
+
+    // Show today's message
+    if (todayIndex >= 0 && todayIndex < messages.length) {
+      messageElement.innerText = messages[todayIndex].text;
+      imageElement.src = messages[todayIndex].img;
+    } else if (todayIndex < 0) {
+      messageElement.innerText = "Surprises start from Sept 4! ✨";
+    } else {
+      messageElement.innerText = "🎂 Happy Birthday! 🎂";
+    }
+
+    // Build gallery of all memories (locked/unlocked)
+    for (let i = 0; i < messages.length; i++) {
+      const card = document.createElement("div");
+      card.className = "gallery-card";
+
+      if (i <= todayIndex) {
+        card.innerHTML = `<p><strong>${messages[i].date}:</strong> ${messages[i].text}</p><img src="${messages[i].img}" alt="memory">`;
+      } else {
+        card.classList.add("locked");
+        card.innerHTML = `<p><strong>${messages[i].date}:</strong> 🔒 Unlocks on ${messages[i].date}</p>`;
+      }
+
+      gallery.appendChild(card);
+    }
+  </script>
+</body>
+</html>
