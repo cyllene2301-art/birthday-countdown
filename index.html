@@ -215,8 +215,9 @@
       })();
     }
 
-    // Messages (5 Sept – 25 Sept)
+    // Messages (4 Sept – 25 Sept)
     const messages = [
+      { date: 'Sept 4', text: 'First surprise unlocked! ❤️', img: 'images/sep4.jpg', audio: 'audio/sep4.mp3' },
       { date: 'Sept 5', text: 'sikedddddd ❤️', img: 'images/sep5.jpg', audio: 'audio/sep5.mp3' },
       { date: 'Sept 6', text: 'Your custom memory for Sept 6 ❤️', img: 'images/sep6.jpg', audio: 'audio/sep6.mp3' },
       { date: 'Sept 7', text: 'Your custom memory for Sept 7 ❤️', img: 'images/sep7.jpg', audio: 'audio/sep7.mp3' },
@@ -240,8 +241,8 @@
       { date: 'Sept 25', text: 'Your custom memory for Sept 25 ❤️', img: 'images/sep25.jpg', audio: 'audio/sep25.mp3' }
     ];
 
-    // Unlock logic: each midnight IST unlocks next day (5 Sept – 25 Sept)
-    const startDate = new Date('2025-09-05T00:00:00+05:30').getTime();
+    // Unlock logic: each midnight IST unlocks next day (4 Sept – 25 Sept)
+    const startDate = new Date('2025-09-04T00:00:00+05:30').getTime();
     let unlockedCount = 0;
     let currentIndex = 0; // for swipe navigation
 
@@ -254,11 +255,11 @@
 
     function updateUnlocks(){
       const now = Date.now();
-      const daysPassed = Math.floor((now - startDate)/86400000) + 1; // +1 so day 1 unlocks exactly at midnight
+      const daysPassed = Math.floor((now - startDate)/86400000) + 1;
       const count = Math.max(0, Math.min(daysPassed, messages.length));
       if (count !== unlockedCount){
         unlockedCount = count;
-        currentIndex = Math.max(0, unlockedCount - 1); // latest unlocked
+        currentIndex = Math.max(0, unlockedCount - 1);
         updateMessage();
         buildGallery();
       }
@@ -270,12 +271,11 @@
         messageElement.textContent = m.text;
         imageElement.style.display = 'block';
         imageElement.src = m.img; imageElement.alt = `Memory for ${m.date}`;
-        // Audio (optional if exists)
         fetch(m.audio, { method: 'HEAD' })
           .then(r => { if(r.ok){ audioElement.src=m.audio; audioElement.style.display='block'; } else { audioElement.style.display='none'; } })
           .catch(()=>{ audioElement.style.display='none'; });
       } else {
-        messageElement.textContent = 'Surprises start from Sept 5 at 12:00 AM IST.';
+        messageElement.textContent = 'Surprises start from Sept 4 at 12:00 AM IST.';
         imageElement.style.display = 'none';
         audioElement.style.display = 'none';
       }
@@ -296,37 +296,5 @@
       }
     }
 
-    // Auto-refresh unlocks every minute
     setInterval(updateUnlocks, 60000);
-    updateUnlocks(); // initial
-
-    // Gallery toggle with sound
-    toggleBtn.addEventListener('click', () => {
-      try{ toggleSound.currentTime = 0; toggleSound.play(); }catch(e){}
-      const open = galleryContainer.style.display === 'flex';
-      if (!open){ buildGallery(); galleryContainer.style.display = 'flex'; toggleBtn.textContent = 'Close Memory Gallery'; }
-      else { galleryContainer.style.display = 'none'; toggleBtn.textContent = 'Open Memory Gallery'; }
-    });
-
-    // Dark/Light toggle
-    document.getElementById('themeToggle').addEventListener('click', ()=>{
-      document.body.classList.toggle('dark');
-    });
-
-    // Swipe + keyboard navigation on Today card
-    let startX = 0; const dailyMessageCard = document.getElementById('dailyMessage');
-    dailyMessageCard.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
-    dailyMessageCard.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].clientX - startX;
-      if (Math.abs(dx) > 50){
-        if (dx > 0 && currentIndex > 0){ currentIndex--; updateMessage(); }
-        else if (dx < 0 && currentIndex < unlockedCount-1){ currentIndex++; updateMessage(); }
-      }
-    });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'ArrowLeft' && currentIndex > 0){ currentIndex--; updateMessage(); }
-      if (e.key === 'ArrowRight' && currentIndex < unlockedCount-1){ currentIndex++; updateMessage(); }
-    });
-  </script>
-</body>
-</html>
+    updateUnlocks();
