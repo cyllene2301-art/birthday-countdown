@@ -2,190 +2,179 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Birthday Countdown</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --paper:#faf6f2;
-      --ink:#2b2a27;
-      --muted:#7a6f6b;
-      --accent:#a67c52;
-      --glass:rgba(255,255,255,0.9);
-      --card-border:rgba(0,0,0,0.06);
+    body {
+      margin: 0;
+      font-family: 'Georgia', serif;
+      background: linear-gradient(135deg, #f9f7f4, #f1ebe6);
+      color: #333;
     }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      background:linear-gradient(180deg,#fbf7f5,#f2ece9);
-      color:var(--ink);
-      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-      line-height:1.5;
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
     }
-    .container{max-width:1100px;margin:0 auto;padding:24px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-    .title{font-family:"Playfair Display",serif;font-size:24px;color:var(--accent)}
-    .pill{padding:6px 12px;border-radius:999px;border:1px solid var(--card-border);font-size:12px;color:var(--muted)}
-
-    /* Hero */
-    .hero{display:flex;gap:28px;align-items:center;padding:40px;border-radius:18px;background:var(--glass);box-shadow:0 8px 30px rgba(0,0,0,.04);border:1px solid var(--card-border);margin-bottom:32px}
-    .hero-inner{display:flex;align-items:center;gap:28px;width:100%}
-    .hero-copy{flex:1}
-    .hero-copy h1{font-family:"Playfair Display",serif;font-size:36px;margin-bottom:10px;color:var(--accent)}
-    .hero-copy p{color:var(--muted);font-size:16px;max-width:600px}
-    .hero-art img{width:360px;height:240px;object-fit:cover;border-radius:12px;box-shadow:0 10px 30px rgba(166,124,82,.08)}
-    @media (max-width:900px){.hero-inner{flex-direction:column}.hero-art img{width:100%;height:auto}}
-
-    /* Countdown */
-    .card{background:#fff;border:1px solid var(--card-border);border-radius:16px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,.03)}
-    .units{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .unit{text-align:center}
-    .num{font-weight:600;font-size:22px;color:var(--accent)}
-    .lab{font-size:11px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
-    .progressBar{height:8px;border-radius:999px;background:#f1ece8;overflow:hidden;margin-top:10px}
-    .progress{height:100%;width:0;background:var(--accent)}
-    .eta{margin-top:6px;font-size:12px;color:var(--muted)}
-
-    /* Gallery */
-    .stack{display:grid;gap:22px}
-    .gcard{background:#fff;border-radius:12px;border:1px solid var(--card-border);overflow:hidden;opacity:0;transform:translateY(12px)}
-    .gcard.reveal{opacity:1;transform:translateY(0);transition:all .6s cubic-bezier(.2,.9,.2,1)}
-    .gcard img{width:100%;height:180px;object-fit:cover;display:block}
-    .meta{padding:14px}
-    .meta h4{font-family:"Playfair Display",serif;font-size:16px;color:var(--accent);margin-bottom:6px}
-    .meta p{color:var(--muted);font-size:13px}
-    .locked img{filter:grayscale(.25) blur(6px)}
-    .lockBadge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.35);color:#fff;padding:4px 8px;border-radius:999px;font-size:11px}
-
-    footer{margin:40px 0 12px;text-align:center;color:var(--muted);font-size:12px}
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    header p {
+      font-size: 1.2rem;
+      color: #555;
+    }
+    .countdown {
+      text-align: center;
+      font-size: 1.5rem;
+      margin: 2rem 0;
+    }
+    .memories {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      padding: 0 1rem 3rem;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+      padding: 1.5rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: transform 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card h3 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #444;
+    }
+    .card p {
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    .locked {
+      opacity: 0.4;
+      text-align: center;
+      font-style: italic;
+    }
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: pink;
+      opacity: 0.7;
+      animation: fall 4s linear infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-10px) rotate(0deg); }
+      100% { transform: translateY(100vh) rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="title">Birthday Countdown</div>
-      <div class="pill" id="rangePill">Loading…</div>
-    </header>
+  <header>
+    <h1>Countdown to Your Day</h1>
+    <p>Every day unlocks a memory until the big day arrives</p>
+  </header>
 
-    <section class="hero">
-      <div class="hero-inner">
-        <div class="hero-copy">
-          <h1>For My Love — A Collection of Days</h1>
-          <p>Each sunrise unveils a memory, until the day we celebrate you.</p>
-          <div class="card" id="countCard">
-            <div class="units">
-              <div class="unit"><div class="num" id="dNum">0</div><div class="lab">Days</div></div>
-              <div class="unit"><div class="num" id="hNum">0</div><div class="lab">Hrs</div></div>
-              <div class="unit"><div class="num" id="mNum">0</div><div class="lab">Mins</div></div>
-              <div class="unit"><div class="num" id="sNum">0</div><div class="lab">Secs</div></div>
-            </div>
-            <div class="progressBar"><div class="progress" id="progress"></div></div>
-            <div class="eta" id="eta"></div>
-          </div>
-        </div>
-        <div class="hero-art">
-          <img id="heroImg" src="images/hero.jpg" alt="Hero image">
-        </div>
-      </div>
-    </section>
+  <div class="countdown" id="countdown"></div>
 
-    <section class="stack">
-      <h3 style="font-family:'Playfair Display',serif;color:var(--accent);margin-bottom:10px">Memory Gallery</h3>
-      <div class="grid" id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px"></div>
-    </section>
+  <section class="memories" id="memories"></section>
 
-    <footer>Made with love</footer>
-  </div>
+  <div class="confetti" id="confetti"></div>
 
   <script>
-    const CONFIG = {
-      timezone: "Asia/Kolkata",
-      start: "2025-09-04",
-      end:   "2025-09-25",
-      messages: Array.from({length:22}, (_,i)=>{
-        const day = i+4;
-        return {
-          dateLabel:`Sept ${day}`,
-          text:`A poetic note for Sept ${day}`,
-          img:`images/sep${day}.jpg`
-        };
-      })
-    };
+    const countdownEl = document.getElementById('countdown');
+    const memoriesEl = document.getElementById('memories');
+    const confettiEl = document.getElementById('confetti');
 
-    function zonedMidnight(dateStr, tz){
-      const parts = dateStr.split('-').map(Number);
-      const d = new Date(Date.UTC(parts[0], parts[1]-1, parts[2]));
-      const as = new Intl.DateTimeFormat('en-GB',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
-      const [dd,mm,yyyy]=as.split('/');
-      return new Date(`${yyyy}-${mm}-${dd}T00:00:00`).getTime();
-    }
-    function nowTZ(tz){
-      const fmt = new Intl.DateTimeFormat('en-GB',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      const parts = fmt.formatToParts(new Date());
-      const m = Object.fromEntries(parts.map(p=>[p.type,p.value]));
-      return new Date(`${m.year}-${m.month}-${m.day}T${m.hour}:${m.minute}:${m.second}`);
+    const targetDate = new Date('2025-09-25');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = targetDate - now;
+      if (diff <= 0) {
+        countdownEl.textContent = "It's the special day!";
+        launchConfetti();
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        countdownEl.textContent = `${days} days to go`;
+      }
     }
 
-    const tz = CONFIG.timezone;
-    const startAt = zonedMidnight(CONFIG.start,tz);
-    const endAt = zonedMidnight(CONFIG.end,tz)+(24*60*60*1000)-1;
+    const memories = [
+      { date: '2025-09-04', text: 'The first time we met, everything changed.' },
+      { date: '2025-09-05', text: 'Your smile makes the world brighter.' },
+      { date: '2025-09-06', text: 'I still remember our long talks.' },
+      { date: '2025-09-07', text: 'You make even ordinary days special.' },
+      { date: '2025-09-08', text: 'I love the way you laugh.' },
+      { date: '2025-09-09', text: 'Our first picture together.' },
+      { date: '2025-09-10', text: 'When you held my hand, I felt complete.' },
+      { date: '2025-09-11', text: 'The walk under the stars.' },
+      { date: '2025-09-12', text: 'You’re my favorite person.' },
+      { date: '2025-09-13', text: 'Life feels easier with you around.' },
+      { date: '2025-09-14', text: 'You inspire me every day.' },
+      { date: '2025-09-15', text: 'Our silly jokes still make me smile.' },
+      { date: '2025-09-16', text: 'I admire your strength and kindness.' },
+      { date: '2025-09-17', text: 'The way you care is beautiful.' },
+      { date: '2025-09-18', text: 'Every memory with you is precious.' },
+      { date: '2025-09-19', text: 'Your voice is my favorite sound.' },
+      { date: '2025-09-20', text: 'You’re the best part of my days.' },
+      { date: '2025-09-21', text: 'The little things you do mean a lot.' },
+      { date: '2025-09-22', text: 'You’re truly unforgettable.' },
+      { date: '2025-09-23', text: 'Counting down to celebrate you.' },
+      { date: '2025-09-24', text: 'Tomorrow is going to be magical.' },
+      { date: '2025-09-25', text: 'Happy Birthday my love. Today is all yours.' }
+    ];
 
-    const dEl=document.getElementById('dNum'),hEl=document.getElementById('hNum'),mEl=document.getElementById('mNum'),sEl=document.getElementById('sNum');
-    const etaEl=document.getElementById('eta');
-    const prog=document.getElementById('progress');
-    const rangePill=document.getElementById('rangePill');
-    rangePill.textContent=`${CONFIG.start} → ${CONFIG.end} • IST`;
-
-    function tick(){
-      const now=nowTZ(tz).getTime();
-      const target=zonedMidnight(CONFIG.end,tz);
-      let diff=target-now; if(diff<0) diff=0;
-      const d=Math.floor(diff/86400000);
-      const h=Math.floor((diff%86400000)/3600000);
-      const m=Math.floor((diff%3600000)/60000);
-      const s=Math.floor((diff%60000)/1000);
-      dEl.textContent=d; hEl.textContent=h; mEl.textContent=m; sEl.textContent=s;
-      const total=zonedMidnight(CONFIG.end,tz)-zonedMidnight(CONFIG.start,tz);
-      const covered=Math.min(Math.max(now-startAt,0),total);
-      const pct=total>0?(covered/total)*100:0;
-      prog.style.width=pct+'%';
-      etaEl.textContent=diff>0?`Only ${d} days ${h} hrs left`:`It’s the big day!`;
+    function renderMemories() {
+      memoriesEl.innerHTML = '';
+      memories.forEach(mem => {
+        const memDate = new Date(mem.date);
+        memDate.setHours(0,0,0,0);
+        const card = document.createElement('div');
+        if (memDate <= today) {
+          card.className = 'card';
+          card.innerHTML = `<h3>${memDate.toDateString()}</h3><p>${mem.text}</p>`;
+        } else {
+          card.className = 'card locked';
+          card.innerHTML = `<h3>${memDate.toDateString()}</h3><p>Hidden until ${memDate.toDateString()}</p>`;
+        }
+        memoriesEl.appendChild(card);
+      });
     }
-    tick(); setInterval(tick,1000);
 
-    const todayTZ=nowTZ(tz);
-    const todayMid=zonedMidnight(todayTZ.toISOString().slice(0,10),tz);
-    const unlockIdx=Math.floor((todayMid-startAt)/86400000);
+    function launchConfetti() {
+      for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.backgroundColor = ['#ff4d6d','#ff80ab','#ffb3c1'][Math.floor(Math.random()*3)];
+        piece.style.animationDuration = (3 + Math.random() * 2) + 's';
+        piece.style.opacity = Math.random();
+        confettiEl.appendChild(piece);
+        setTimeout(() => piece.remove(), 5000);
+      }
+    }
 
-    const grid=document.getElementById('grid');
-    CONFIG.messages.forEach((mem,i)=>{
-      const card=document.createElement('div');
-      const isUnlocked=i<=unlockIdx;
-      card.className=`gcard ${isUnlocked?'unlocked':'locked'}`;
-      card.innerHTML=`
-        <div style="position:relative">
-          <span class="lockBadge">${isUnlocked?'Unlocked':`Unlocks ${mem.dateLabel}`}</span>
-          <img src="${mem.img}" alt="${mem.dateLabel}">
-        </div>
-        <div class="meta">
-          <h4>${mem.dateLabel}</h4>
-          <p>${isUnlocked?mem.text:'Hidden until '+mem.dateLabel}</p>
-        </div>`;
-      grid.appendChild(card);
-    });
-
-    // Scroll reveal
-    const items=document.querySelectorAll('.gcard');
-    const io=new IntersectionObserver((entries)=>{
-      entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add('reveal');});
-    },{threshold:.12});
-    items.forEach(i=>io.observe(i));
-
-    // Parallax
-    const heroImg=document.getElementById('heroImg');
-    window.addEventListener('scroll',()=>{
-      const y=window.scrollY;
-      heroImg.style.transform=`translateY(${y*0.03}px)`;
-    });
+    updateCountdown();
+    renderMemories();
+    setInterval(updateCountdown, 60000);
   </script>
 </body>
 </html>
