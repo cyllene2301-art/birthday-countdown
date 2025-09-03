@@ -3,84 +3,74 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="robots" content="noindex,nofollow" />
   <title>Birthday Countdown</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg1:#0f0c29; --bg2:#302b63; --bg3:#24243e;
-      --glass:rgba(255,255,255,.12); --glass-strong:rgba(255,255,255,.18);
-      --border:rgba(255,255,255,.25); --text:#f7f7fb; --muted:#c7c7d1;
-      --accent:#ff9bd2; --accent2:#a78bfa;
+      --paper:#faf6f2;
+      --ink:#2b2a27;
+      --muted:#7a6f6b;
+      --accent:#a67c52;
+      --glass:rgba(255,255,255,0.9);
+      --card-border:rgba(0,0,0,0.06);
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
-      margin:0; color:var(--text); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background: radial-gradient(1000px 600px at 20% 10%, rgba(255,255,255,.10), transparent),
-                  radial-gradient(1000px 600px at 80% 0%, rgba(255,192,203,.10), transparent),
-                  linear-gradient(135deg,var(--bg1),var(--bg2) 50%,var(--bg3));
-      background-attachment: fixed;
+      background:linear-gradient(180deg,#fbf7f5,#f2ece9);
+      color:var(--ink);
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+      line-height:1.5;
     }
     .container{max-width:1100px;margin:0 auto;padding:24px}
-    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 10px 30px rgba(167,139,250,.35)}
-    .title{font-family:"Playfair Display",serif;font-weight:700;letter-spacing:.3px;font-size:22px}
-    .pill{padding:10px 14px;border-radius:999px;border:1px solid var(--border);background:var(--glass); color:var(--muted); font-weight:600; font-size:12px}
-    .hero{border:1px solid var(--border);background:var(--glass-strong);backdrop-filter: blur(12px);-webkit-backdrop-filter: blur(12px);border-radius:24px;padding:24px}
-    .headline{display:flex;flex-direction:column;gap:6px}
-    .headline h1{margin:0;font-size:clamp(26px,4.6vw,44px);line-height:1.08;font-family:"Playfair Display",serif}
-    .sub{color:var(--muted);margin:0}
-    .heroGrid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;margin-top:20px}
-    @media (max-width:900px){.heroGrid{grid-template-columns:1fr}}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .title{font-family:"Playfair Display",serif;font-size:24px;color:var(--accent)}
+    .pill{padding:6px 12px;border-radius:999px;border:1px solid var(--card-border);font-size:12px;color:var(--muted)}
 
-    .card{border:1px solid var(--border);background:var(--glass);backdrop-filter: blur(10px);border-radius:20px;padding:18px}
+    /* Hero */
+    .hero{display:flex;gap:28px;align-items:center;padding:40px;border-radius:18px;background:var(--glass);box-shadow:0 8px 30px rgba(0,0,0,.04);border:1px solid var(--card-border);margin-bottom:32px}
+    .hero-inner{display:flex;align-items:center;gap:28px;width:100%}
+    .hero-copy{flex:1}
+    .hero-copy h1{font-family:"Playfair Display",serif;font-size:36px;margin-bottom:10px;color:var(--accent)}
+    .hero-copy p{color:var(--muted);font-size:16px;max-width:600px}
+    .hero-art img{width:360px;height:240px;object-fit:cover;border-radius:12px;box-shadow:0 10px 30px rgba(166,124,82,.08)}
+    @media (max-width:900px){.hero-inner{flex-direction:column}.hero-art img{width:100%;height:auto}}
+
+    /* Countdown */
+    .card{background:#fff;border:1px solid var(--card-border);border-radius:16px;padding:18px;box-shadow:0 6px 20px rgba(0,0,0,.03)}
     .units{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .unit{padding:14px 10px;border:1px solid var(--border);border-radius:16px;background:rgba(255,255,255,.08);text-align:center}
-    .num{font-weight:800;font-size:clamp(22px,4vw,32px)}
+    .unit{text-align:center}
+    .num{font-weight:600;font-size:22px;color:var(--accent)}
     .lab{font-size:11px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
-    .progressWrap{margin-top:12px}
-    .progressBar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);position:relative;overflow:hidden}
-    .progress{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px}
-    .eta{margin-top:8px;font-size:12px;color:var(--muted)}
+    .progressBar{height:8px;border-radius:999px;background:#f1ece8;overflow:hidden;margin-top:10px}
+    .progress{height:100%;width:0;background:var(--accent)}
+    .eta{margin-top:6px;font-size:12px;color:var(--muted)}
 
-    .stack{display:grid;grid-template-columns:1fr;gap:20px;margin-top:22px}
-    .todayCard h3{margin:0 0 6px 0;font-size:18px}
-    .tag{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.08);font-size:12px;color:var(--muted)}
-    .memoryMedia{position:relative;border-radius:16px;overflow:hidden;margin-top:10px}
-    .memoryMedia img{width:100%;display:block}
+    /* Gallery */
+    .stack{display:grid;gap:22px}
+    .gcard{background:#fff;border-radius:12px;border:1px solid var(--card-border);overflow:hidden;opacity:0;transform:translateY(12px)}
+    .gcard.reveal{opacity:1;transform:translateY(0);transition:all .6s cubic-bezier(.2,.9,.2,1)}
+    .gcard img{width:100%;height:180px;object-fit:cover;display:block}
+    .meta{padding:14px}
+    .meta h4{font-family:"Playfair Display",serif;font-size:16px;color:var(--accent);margin-bottom:6px}
+    .meta p{color:var(--muted);font-size:13px}
+    .locked img{filter:grayscale(.25) blur(6px)}
+    .lockBadge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.35);color:#fff;padding:4px 8px;border-radius:999px;font-size:11px}
 
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-    @media (max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
-    @media (max-width:780px){.grid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:520px){.grid{grid-template-columns:1fr}}
-    .gcard{border:1px solid var(--border);background:rgba(255,255,255,.08);border-radius:16px;overflow:hidden;position:relative}
-    .gcard .meta{padding:12px}
-    .gcard h4{margin:0 0 6px;font-size:14px}
-    .gcard p{margin:0;color:var(--muted);font-size:12.5px}
-    .thumb{aspect-ratio:4/3;width:100%;object-fit:cover;display:block}
-    .locked .thumb{filter: blur(10px) saturate(.7)}
-    .lockBadge{position:absolute;top:10px;left:10px;font-size:11px;padding:6px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(0,0,0,.35)}
-    .unlocked .lockBadge{background:rgba(0,0,0,.2)}
-
-    footer{margin:34px 0 8px;color:var(--muted);text-align:center;font-size:12px}
-    #confetti{position:fixed;inset:0;pointer-events:none}
+    footer{margin:40px 0 12px;text-align:center;color:var(--muted);font-size:12px}
   </style>
 </head>
 <body>
-  <canvas id="confetti"></canvas>
   <div class="container">
     <header>
-      <div class="brand"><div class="logo"></div><div class="title">Birthday Countdown</div></div>
+      <div class="title">Birthday Countdown</div>
       <div class="pill" id="rangePill">Loading…</div>
     </header>
 
     <section class="hero">
-      <div class="heroGrid">
-        <div class="headline">
-          <h1 id="headlineTxt">Counting down to your day</h1>
-          <p class="sub" id="subTxt">A memory unlocks every day till the big celebration.</p>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h1>For My Love — A Collection of Days</h1>
+          <p>Each sunrise unveils a memory, until the day we celebrate you.</p>
           <div class="card" id="countCard">
             <div class="units">
               <div class="unit"><div class="num" id="dNum">0</div><div class="lab">Days</div></div>
@@ -88,146 +78,114 @@
               <div class="unit"><div class="num" id="mNum">0</div><div class="lab">Mins</div></div>
               <div class="unit"><div class="num" id="sNum">0</div><div class="lab">Secs</div></div>
             </div>
-            <div class="progressWrap"><div class="progressBar"><div class="progress" id="progress"></div></div><div class="eta" id="eta"></div></div>
+            <div class="progressBar"><div class="progress" id="progress"></div></div>
+            <div class="eta" id="eta"></div>
           </div>
         </div>
-        <div class="card todayCard">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-            <h3 id="todayTitle">Today's Surprise</h3>
-            <span class="tag" id="todayTag"></span>
-          </div>
-          <div id="todayText" style="margin-top:4px;color:var(--muted)">—</div>
-          <div class="memoryMedia"><img id="todayImg" alt="Today memory"/></div>
+        <div class="hero-art">
+          <img id="heroImg" src="images/hero.jpg" alt="Hero image">
         </div>
       </div>
     </section>
 
     <section class="stack">
-      <div class="card"><h3 style="margin:0 0 10px">Memory Gallery</h3><div class="grid" id="grid"></div></div>
+      <h3 style="font-family:'Playfair Display',serif;color:var(--accent);margin-bottom:10px">Memory Gallery</h3>
+      <div class="grid" id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px"></div>
     </section>
 
-    <footer>Made just for you</footer>
+    <footer>Made with love</footer>
   </div>
 
   <script>
-    // CONFIG: edit only these values
     const CONFIG = {
-      timezone: 'Asia/Kolkata',
-      start: '2025-09-04',
-      end:   '2025-09-25'
+      timezone: "Asia/Kolkata",
+      start: "2025-09-04",
+      end:   "2025-09-25",
+      messages: Array.from({length:22}, (_,i)=>{
+        const day = i+4;
+        return {
+          dateLabel:`Sept ${day}`,
+          text:`A poetic note for Sept ${day}`,
+          img:`images/sep${day}.jpg`
+        };
+      })
     };
 
-    function isoAddDays(iso, days){
-      const [y,m,d] = iso.split('-').map(Number);
-      const dt = new Date(Date.UTC(y, m-1, d));
-      dt.setUTCDate(dt.getUTCDate() + days);
-      const Y = dt.getUTCFullYear();
-      const M = String(dt.getUTCMonth()+1).padStart(2,'0');
-      const D = String(dt.getUTCDate()).padStart(2,'0');
-      return `${Y}-${M}-${D}`;
-    }
-    function daysBetweenInclusive(aIso,bIso){
-      const [ay,am,ad]=aIso.split('-').map(Number); const [by,bm,bd]=bIso.split('-').map(Number);
-      const a = Date.UTC(ay,am-1,ad); const b = Date.UTC(by,bm-1,bd);
-      return Math.round((b-a)/86400000) + 1;
-    }
-    function ymdInTZ(date, tz){
-      const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit' });
-      return fmt.format(date); // YYYY-MM-DD
+    function zonedMidnight(dateStr, tz){
+      const parts = dateStr.split('-').map(Number);
+      const d = new Date(Date.UTC(parts[0], parts[1]-1, parts[2]));
+      const as = new Intl.DateTimeFormat('en-GB',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
+      const [dd,mm,yyyy]=as.split('/');
+      return new Date(`${yyyy}-${mm}-${dd}T00:00:00`).getTime();
     }
     function nowTZ(tz){
-      const fmt = new Intl.DateTimeFormat('en-GB', { timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      const fmt = new Intl.DateTimeFormat('en-GB',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
       const parts = fmt.formatToParts(new Date());
       const m = Object.fromEntries(parts.map(p=>[p.type,p.value]));
       return new Date(`${m.year}-${m.month}-${m.day}T${m.hour}:${m.minute}:${m.second}`);
     }
 
-    // build messages array from start..end inclusive
-    const totalDays = daysBetweenInclusive(CONFIG.start, CONFIG.end);
-    const messages = [];
-    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sept','Oct','Nov','Dec'];
-    for(let i=0;i<totalDays;i++){
-      const iso = isoAddDays(CONFIG.start, i);
-      const dayNum = Number(iso.split('-')[2]);
-      const monthNum = Number(iso.split('-')[1]);
-      const label = `${monthNames[monthNum-1]} ${dayNum}`;
-      messages.push({ iso, dateLabel: label, text: `Replace with your custom message for ${label}`, img: `images/sep${dayNum}.jpg` });
-    }
+    const tz = CONFIG.timezone;
+    const startAt = zonedMidnight(CONFIG.start,tz);
+    const endAt = zonedMidnight(CONFIG.end,tz)+(24*60*60*1000)-1;
 
-    // helper: today's ISO in target timezone
-    const todayISO = ymdInTZ(new Date(), CONFIG.timezone);
-
-    // find unlock index (last message with iso <= todayISO)
-    let unlockIdx = -1;
-    for(let i=0;i<messages.length;i++){
-      if(messages[i].iso <= todayISO) unlockIdx = i;
-    }
-
-    // Countdown / progress
-    const dEl = document.getElementById('dNum'), hEl = document.getElementById('hNum'), mEl = document.getElementById('mNum'), sEl = document.getElementById('sNum');
-    const etaEl = document.getElementById('eta'), prog = document.getElementById('progress'), rangePill = document.getElementById('rangePill');
-    rangePill.textContent = `${CONFIG.start} → ${CONFIG.end} • IST`;
+    const dEl=document.getElementById('dNum'),hEl=document.getElementById('hNum'),mEl=document.getElementById('mNum'),sEl=document.getElementById('sNum');
+    const etaEl=document.getElementById('eta');
+    const prog=document.getElementById('progress');
+    const rangePill=document.getElementById('rangePill');
+    rangePill.textContent=`${CONFIG.start} → ${CONFIG.end} • IST`;
 
     function tick(){
-      const now = nowTZ(CONFIG.timezone).getTime();
-      const target = Date.parse(CONFIG.end + 'T00:00:00+05:30');
-      let diff = target - now; if(diff < 0) diff = 0;
-      const d = Math.floor(diff/86400000); const h = Math.floor((diff%86400000)/3600000); const m = Math.floor((diff%3600000)/60000); const s = Math.floor((diff%60000)/1000);
+      const now=nowTZ(tz).getTime();
+      const target=zonedMidnight(CONFIG.end,tz);
+      let diff=target-now; if(diff<0) diff=0;
+      const d=Math.floor(diff/86400000);
+      const h=Math.floor((diff%86400000)/3600000);
+      const m=Math.floor((diff%3600000)/60000);
+      const s=Math.floor((diff%60000)/1000);
       dEl.textContent=d; hEl.textContent=h; mEl.textContent=m; sEl.textContent=s;
-      const startTS = Date.parse(CONFIG.start + 'T00:00:00+05:30');
-      const endTS = Date.parse(CONFIG.end + 'T00:00:00+05:30');
-      const total = endTS - startTS;
-      const covered = Math.min(Math.max(now - startTS, 0), total);
-      const pct = total>0 ? (covered/total)*100 : 0;
-      prog.style.width = pct + '%';
-      etaEl.textContent = diff>0 ? `Only ${d} days ${h} hrs left` : `It's the big day!`;
+      const total=zonedMidnight(CONFIG.end,tz)-zonedMidnight(CONFIG.start,tz);
+      const covered=Math.min(Math.max(now-startAt,0),total);
+      const pct=total>0?(covered/total)*100:0;
+      prog.style.width=pct+'%';
+      etaEl.textContent=diff>0?`Only ${d} days ${h} hrs left`:`It’s the big day!`;
     }
-    tick(); setInterval(tick, 1000);
+    tick(); setInterval(tick,1000);
 
-    // Today card
-    const todayTitle = document.getElementById('todayTitle'), todayTag = document.getElementById('todayTag'), todayText = document.getElementById('todayText'), todayImg = document.getElementById('todayImg');
-    if(unlockIdx < 0){
-      todayTitle.textContent = `First surprise unlocks on ${messages[0].dateLabel}`;
-      todayTag.textContent = 'Locked • IST';
-      todayText.textContent = 'Come back on the start date!';
-      document.querySelector('.memoryMedia').style.display = 'none';
-    } else if(unlockIdx >= messages.length-1){
-      const mem = messages[messages.length-1];
-      todayTitle.textContent = mem.dateLabel;
-      todayTag.textContent = 'Unlocked • IST';
-      todayText.textContent = mem.text;
-      todayImg.src = mem.img;
-    } else {
-      const mem = messages[unlockIdx];
-      todayTitle.textContent = mem.dateLabel;
-      todayTag.textContent = 'Unlocked • IST';
-      todayText.textContent = mem.text;
-      todayImg.src = mem.img;
-    }
+    const todayTZ=nowTZ(tz);
+    const todayMid=zonedMidnight(todayTZ.toISOString().slice(0,10),tz);
+    const unlockIdx=Math.floor((todayMid-startAt)/86400000);
 
-    // Build gallery
-    const grid = document.getElementById('grid');
-    messages.forEach((mem, i)=>{
-      const isUnlocked = i <= unlockIdx;
-      const card = document.createElement('div');
-      card.className = `gcard ${isUnlocked? 'unlocked':'locked'}`;
-      const badgeText = isUnlocked ? 'Unlocked' : `Unlocks on ${mem.dateLabel}`;
-      card.innerHTML = `\n        <span class="lockBadge">${badgeText}</span>\n        <img class="thumb" src="${mem.img}" alt="${mem.dateLabel}">\n        <div class="meta">\n          <h4>${mem.dateLabel}</h4>\n          <p>${isUnlocked? mem.text : 'Hidden until ' + mem.dateLabel}</p>\n        </div>`;
+    const grid=document.getElementById('grid');
+    CONFIG.messages.forEach((mem,i)=>{
+      const card=document.createElement('div');
+      const isUnlocked=i<=unlockIdx;
+      card.className=`gcard ${isUnlocked?'unlocked':'locked'}`;
+      card.innerHTML=`
+        <div style="position:relative">
+          <span class="lockBadge">${isUnlocked?'Unlocked':`Unlocks ${mem.dateLabel}`}</span>
+          <img src="${mem.img}" alt="${mem.dateLabel}">
+        </div>
+        <div class="meta">
+          <h4>${mem.dateLabel}</h4>
+          <p>${isUnlocked?mem.text:'Hidden until '+mem.dateLabel}</p>
+        </div>`;
       grid.appendChild(card);
     });
 
-    // confetti on birthday (kept subtle, no emoji)
-    (function confetti(){
-      const now = nowTZ(CONFIG.timezone).getTime();
-      const bday = Date.parse(CONFIG.end + 'T00:00:00+05:30');
-      if(now < bday || now > bday + 86400000) return;
-      const cvs = document.getElementById('confetti');
-      const ctx = cvs.getContext('2d');
-      let w,h; function resize(){w=window.innerWidth;h=window.innerHeight;cvs.width=w;cvs.height=h} resize(); window.addEventListener('resize',resize);
-      const parts = []; for(let i=0;i<140;i++) parts.push({x:Math.random()*w,y:Math.random()*-h,vx:Math.random()*2-1,vy:2+Math.random()*3,s:4+Math.random()*6,r:Math.random()*Math.PI});
-      function step(){ctx.clearRect(0,0,w,h);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.r+=0.03;if(p.y>h)p.y=-10;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=['#ff9bd2','#a78bfa','#34d399'][Math.floor(Math.random()*3)];ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s);ctx.restore();});requestAnimationFrame(step)}
-      step(); setTimeout(()=>{cvs.remove()},12000);
-    })();
+    // Scroll reveal
+    const items=document.querySelectorAll('.gcard');
+    const io=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add('reveal');});
+    },{threshold:.12});
+    items.forEach(i=>io.observe(i));
+
+    // Parallax
+    const heroImg=document.getElementById('heroImg');
+    window.addEventListener('scroll',()=>{
+      const y=window.scrollY;
+      heroImg.style.transform=`translateY(${y*0.03}px)`;
+    });
   </script>
 </body>
 </html>
