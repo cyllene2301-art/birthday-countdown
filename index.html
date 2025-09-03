@@ -6,175 +6,148 @@
   <title>Birthday Countdown</title>
   <style>
     body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
       margin: 0;
-      font-family: 'Georgia', serif;
-      background: linear-gradient(135deg, #f9f7f4, #f1ebe6);
-      color: #333;
-    }
-    header {
+      padding: 20px;
+      background: linear-gradient(135deg, #f9a8d4, #f472b6);
+      color: #fff;
       text-align: center;
-      padding: 2rem 1rem;
     }
-    header h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
     }
-    header p {
-      font-size: 1.2rem;
-      color: #555;
-    }
-    .countdown {
-      text-align: center;
+    #countdown {
       font-size: 1.5rem;
-      margin: 2rem 0;
-    }
-    .memories {
-      max-width: 900px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      padding: 0 1rem 3rem;
+      margin-bottom: 20px;
     }
     .card {
-      border: 1px solid #ddd;
+      background: rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 15px;
+      margin: 10px auto;
+      max-width: 350px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    img {
+      max-width: 100%;
       border-radius: 12px;
-      background: #fff;
-      padding: 1.5rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      transition: transform 0.3s ease;
+      margin-top: 10px;
     }
-    .card:hover {
-      transform: translateY(-5px);
+    #gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
     }
-    .card h3 {
-      margin-top: 0;
-      font-size: 1.2rem;
-      color: #444;
+    .gallery-card {
+      background: rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 10px;
+      width: 160px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    .card p {
-      font-size: 1rem;
-      line-height: 1.4;
+    .gallery-card img {
+      width: 100%;
+      border-radius: 10px;
     }
     .locked {
-      opacity: 0.4;
-      text-align: center;
+      opacity: 0.5;
       font-style: italic;
     }
-    .confetti {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      overflow: hidden;
-    }
-    .confetti-piece {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: pink;
-      opacity: 0.7;
-      animation: fall 4s linear infinite;
-    }
-    @keyframes fall {
-      0% { transform: translateY(-10px) rotate(0deg); }
-      100% { transform: translateY(100vh) rotate(360deg); }
+    @media (max-width: 600px) {
+      h1 { font-size: 1.5rem; }
+      #countdown { font-size: 1.2rem; }
+      .gallery-card { width: 100%; max-width: 300px; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Countdown to Your Day</h1>
-    <p>Every day unlocks a memory until the big day arrives</p>
-  </header>
+  <h1>Mahak's 23rd Birthday 🩵</h1>
+  <div id="countdown"></div>
 
-  <div class="countdown" id="countdown"></div>
+  <div class="card" id="dailyMessage">
+    <h2>Today’s Surprise</h2>
+    <p id="message"></p>
+    <img id="image" src="" alt="" />
+  </div>
 
-  <section class="memories" id="memories"></section>
-
-  <div class="confetti" id="confetti"></div>
+  <h2>Memory Gallery</h2>
+  <div id="gallery"></div>
 
   <script>
-    const countdownEl = document.getElementById('countdown');
-    const memoriesEl = document.getElementById('memories');
-    const confettiEl = document.getElementById('confetti');
+    // Countdown Logic
+    const countdown = document.getElementById("countdown");
+    const birthday = new Date("2025-09-25T00:00:00").getTime();
 
-    const targetDate = new Date('2025-09-25');
-    const today = new Date();
-    today.setHours(0,0,0,0);
+    setInterval(() => {
+      const now = new Date().getTime();
+      const diff = birthday - now;
 
-    function updateCountdown() {
-      const now = new Date();
-      const diff = targetDate - now;
       if (diff <= 0) {
-        countdownEl.textContent = "It's the special day!";
-        launchConfetti();
-      } else {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        countdownEl.textContent = `${days} days to go`;
+        countdown.innerHTML = "Happy Birthday!";
+        return;
       }
-    }
 
-    const memories = [
-      { date: '2025-09-04', text: 'The first time we met, everything changed.' },
-      { date: '2025-09-05', text: 'Your smile makes the world brighter.' },
-      { date: '2025-09-06', text: 'I still remember our long talks.' },
-      { date: '2025-09-07', text: 'You make even ordinary days special.' },
-      { date: '2025-09-08', text: 'I love the way you laugh.' },
-      { date: '2025-09-09', text: 'Our first picture together.' },
-      { date: '2025-09-10', text: 'When you held my hand, I felt complete.' },
-      { date: '2025-09-11', text: 'The walk under the stars.' },
-      { date: '2025-09-12', text: 'You’re my favorite person.' },
-      { date: '2025-09-13', text: 'Life feels easier with you around.' },
-      { date: '2025-09-14', text: 'You inspire me every day.' },
-      { date: '2025-09-15', text: 'Our silly jokes still make me smile.' },
-      { date: '2025-09-16', text: 'I admire your strength and kindness.' },
-      { date: '2025-09-17', text: 'The way you care is beautiful.' },
-      { date: '2025-09-18', text: 'Every memory with you is precious.' },
-      { date: '2025-09-19', text: 'Your voice is my favorite sound.' },
-      { date: '2025-09-20', text: 'You’re the best part of my days.' },
-      { date: '2025-09-21', text: 'The little things you do mean a lot.' },
-      { date: '2025-09-22', text: 'You’re truly unforgettable.' },
-      { date: '2025-09-23', text: 'Counting down to celebrate you.' },
-      { date: '2025-09-24', text: 'Tomorrow is going to be magical.' },
-      { date: '2025-09-25', text: 'Happy Birthday my love. Today is all yours.' }
-    ];
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-    function renderMemories() {
-      memoriesEl.innerHTML = '';
-      memories.forEach(mem => {
-        const memDate = new Date(mem.date);
-        memDate.setHours(0,0,0,0);
-        const card = document.createElement('div');
-        if (memDate <= today) {
-          card.className = 'card';
-          card.innerHTML = `<h3>${memDate.toDateString()}</h3><p>${mem.text}</p>`;
-        } else {
-          card.className = 'card locked';
-          card.innerHTML = `<h3>${memDate.toDateString()}</h3><p>Hidden until ${memDate.toDateString()}</p>`;
-        }
-        memoriesEl.appendChild(card);
+      countdown.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }, 1000);
+
+    // Preloaded Messages & Images (Sept 4 to Sept 25)
+    const messages = [];
+    for (let day = 4; day <= 25; day++) {
+      messages.push({
+        date: `Sept ${day}`,
+        text: `Memory for Sept ${day} (replace with your custom text)`,
+        img: `images/sep${day}.jpg`
       });
     }
 
-    function launchConfetti() {
-      for (let i = 0; i < 50; i++) {
-        const piece = document.createElement('div');
-        piece.className = 'confetti-piece';
-        piece.style.left = Math.random() * 100 + 'vw';
-        piece.style.backgroundColor = ['#ff4d6d','#ff80ab','#ffb3c1'][Math.floor(Math.random()*3)];
-        piece.style.animationDuration = (3 + Math.random() * 2) + 's';
-        piece.style.opacity = Math.random();
-        confettiEl.appendChild(piece);
-        setTimeout(() => piece.remove(), 5000);
-      }
+    // Unlock logic: starting 4 Sept 2:15 AM IST, each minute unlocks next pic
+    const unlockStart = new Date("2025-09-04T02:15:00+05:30").getTime();
+    const now = new Date().getTime();
+    let unlockedCount = Math.floor((now - unlockStart) / (1000 * 60)) + 1;
+
+    if (unlockedCount < 0) unlockedCount = 0;
+    if (unlockedCount > messages.length) unlockedCount = messages.length;
+
+    const messageElement = document.getElementById("message");
+    const imageElement = document.getElementById("image");
+    const gallery = document.getElementById("gallery");
+
+    // Show latest unlocked message
+    if (unlockedCount > 0) {
+      const idx = unlockedCount - 1;
+      messageElement.innerText = messages[idx].text;
+      imageElement.src = messages[idx].img;
+    } else {
+      messageElement.innerText = "Surprises start from Sept 4 at 2:15 AM IST.";
     }
 
-    updateCountdown();
-    renderMemories();
-    setInterval(updateCountdown, 60000);
+    // Build gallery of all memories (locked/unlocked)
+    for (let i = 0; i < messages.length; i++) {
+      const card = document.createElement("div");
+      card.className = "gallery-card";
+
+      if (i < unlockedCount) {
+        card.innerHTML = `<p><strong>${messages[i].date}:</strong> ${messages[i].text}</p><img src="${messages[i].img}" alt="memory">`;
+      } else {
+        card.classList.add("locked");
+        card.innerHTML = `<p><strong>${messages[i].date}:</strong> Unlocks later</p>`;
+      }
+
+      gallery.appendChild(card);
+    }
   </script>
 </body>
 </html>
