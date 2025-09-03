@@ -133,35 +133,21 @@
       countdown.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }, 1000);
 
-    // Messages Sept 4–25 with sample placeholders
-    const messages = [
-      { date: "Sept 4", text: "The countdown begins! Our first memory together 💖", img: "images/sep4.jpg", audio: "audio/sep4.mp3" },
-      { date: "Sept 5", text: "Remember that fun coffee date ☕ — it still makes me smile.", img: "images/sep5.jpg", audio: "audio/sep5.mp3" },
-      { date: "Sept 6", text: "Your laughter is my favorite song 🎶.", img: "images/sep6.jpg", audio: "audio/sep6.mp3" },
-      { date: "Sept 7", text: "The day we got lost but found joy anyway 🚶‍♀️🚶‍♂️.", img: "images/sep7.jpg", audio: "audio/sep7.mp3" },
-      { date: "Sept 8", text: "Mahak, you light up every room ✨.", img: "images/sep8.jpg", audio: "audio/sep8.mp3" },
-      { date: "Sept 9", text: "Our silly inside jokes never get old 😂.", img: "images/sep9.jpg", audio: "audio/sep9.mp3" },
-      { date: "Sept 10", text: "The support you give me is priceless 🤝.", img: "images/sep10.jpg", audio: "audio/sep10.mp3" },
-      { date: "Sept 11", text: "Mahak, you are pure magic 🌟.", img: "images/sep11.jpg", audio: "audio/sep11.mp3" },
-      { date: "Sept 12", text: "The late-night talks are forever etched in my heart 🌙.", img: "images/sep12.jpg", audio: "audio/sep12.mp3" },
-      { date: "Sept 13", text: "I admire your strength and kindness ❤️.", img: "images/sep13.jpg", audio: "audio/sep13.mp3" },
-      { date: "Sept 14", text: "That crazy adventure was unforgettable 🌍.", img: "images/sep14.jpg", audio: "audio/sep14.mp3" },
-      { date: "Sept 15", text: "You inspire me every single day 🌸.", img: "images/sep15.jpg", audio: "audio/sep15.mp3" },
-      { date: "Sept 16", text: "Our playlist = our love story 🎧.", img: "images/sep16.jpg", audio: "audio/sep16.mp3" },
-      { date: "Sept 17", text: "Mahak, thank you for being YOU 💕.", img: "images/sep17.jpg", audio: "audio/sep17.mp3" },
-      { date: "Sept 18", text: "Your smile makes my world brighter ☀️.", img: "images/sep18.jpg", audio: "audio/sep18.mp3" },
-      { date: "Sept 19", text: "The goofy photoshoots 📸 were the best.", img: "images/sep19.jpg", audio: "audio/sep19.mp3" },
-      { date: "Sept 20", text: "Every hug feels like home 🤗.", img: "images/sep20.jpg", audio: "audio/sep20.mp3" },
-      { date: "Sept 21", text: "I’ll always cherish our spontaneous plans 🛵.", img: "images/sep21.jpg", audio: "audio/sep21.mp3" },
-      { date: "Sept 22", text: "Your energy is contagious 🔥.", img: "images/sep22.jpg", audio: "audio/sep22.mp3" },
-      { date: "Sept 23", text: "Mahak, you are my safe place 🏡.", img: "images/sep23.jpg", audio: "audio/sep23.mp3" },
-      { date: "Sept 24", text: "One more day! Can’t wait to celebrate 🎂.", img: "images/sep24.jpg", audio: "audio/sep24.mp3" },
-      { date: "Sept 25", text: "Happy Birthday, Mahak! Wishing you endless joy 💙.", img: "images/sep25.jpg", audio: "audio/sep25.mp3" }
-    ];
+    // Messages Sept 4–25
+    const messages = [];
+    for (let day = 4; day <= 25; day++) {
+      messages.push({
+        date: `Sept ${day}`,
+        text: `Memory for Sept ${day} (replace with your custom text)`,
+        img: `images/sep${day}.jpg`,
+        audio: `audio/sep${day}.mp3` // optional, if file exists
+      });
+    }
 
     // Unlock logic IST
     const unlockStart = new Date("2025-09-04T02:15:00+05:30").getTime();
     let unlockedCount = 0;
+    let currentIndex = 0; // for swipe navigation
 
     const messageElement = document.getElementById("message");
     const imageElement = document.getElementById("image");
@@ -178,14 +164,15 @@
       if (count !== unlockedCount) {
         unlockedCount = count;
         localStorage.setItem("unlockedCount", unlockedCount);
+        currentIndex = unlockedCount - 1; // reset to latest
         updateMessage();
         buildGallery();
       }
     }
 
     function updateMessage() {
-      if (unlockedCount > 0) {
-        const idx = unlockedCount - 1;
+      if (unlockedCount > 0 && currentIndex >= 0 && currentIndex < unlockedCount) {
+        const idx = currentIndex;
         messageElement.innerText = messages[idx].text;
         imageElement.src = messages[idx].img;
         imageElement.alt = `Memory for ${messages[idx].date}`;
@@ -287,6 +274,46 @@
       }
       loop();
     }
+
+    // Swipe + arrow navigation for dailyMessage
+    let startX = 0;
+    const dailyMessageCard = document.getElementById("dailyMessage");
+
+    dailyMessageCard.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+    });
+
+    dailyMessageCard.addEventListener("touchend", (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const diff = endX - startX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          // swipe right → previous
+          if (currentIndex > 0) {
+            currentIndex--;
+            updateMessage();
+          }
+        } else {
+          // swipe left → next
+          if (currentIndex < unlockedCount - 1) {
+            currentIndex++;
+            updateMessage();
+          }
+        }
+      }
+    });
+
+    // Keyboard arrow support
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" && currentIndex > 0) {
+        currentIndex--;
+        updateMessage();
+      }
+      if (e.key === "ArrowRight" && currentIndex < unlockedCount - 1) {
+        currentIndex++;
+        updateMessage();
+      }
+    });
   </script>
 </body>
 </html>
