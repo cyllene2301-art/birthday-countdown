@@ -56,27 +56,26 @@
     
     <div class="text-center mb-8">
         <h1 class="font-pacifico text-4xl sm:text-5xl text-pink-300 drop-shadow-lg">Mahak's 23rd Birthday</h1>
-        <div id="countdown" aria-live="polite" class="mt-4 text-2xl sm:text-3xl font-bold tracking-widest bg-white/10 px-4 py-2 rounded-lg"></div>
+        <div id="countdown" aria-live="polite" class="mt-4 text-2xl sm:text-3xl font-bold tracking-widest"></div>
     </div>
 
     <!-- Daily Surprise Card -->
-    <div id="dailyMessage" class="card-gradient w-full max-w-sm rounded-2xl p-6 shadow-2xl relative select-none">
-      <h2 class="text-2xl font-bold mb-4 text-center">Today’s Surprise</h2>
-      <p id="message" aria-live="polite" class="text-lg mb-4 h-24 text-center flex items-center justify-center"></p>
+    <div id="dailyMessage" class="w-full max-w-sm relative select-none text-center">
+      <p id="message" aria-live="polite" class="text-lg mb-4 min-h-[4rem] flex items-center justify-center"></p>
       <img id="image" src="" alt="Today's memory" class="rounded-xl aspect-square object-cover w-full shadow-lg transition-all duration-300" onerror="this.style.display='none';" />
       
       <!-- Navigation Arrows -->
       <button id="prevBtn" class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/20 p-2 rounded-full hover:bg-white/40 transition disabled:opacity-0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
       <button id="nextBtn" class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/20 p-2 rounded-full hover:bg-white/40 transition disabled:opacity-0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       </button>
     </div>
 
     <!-- Control Buttons -->
     <div class="flex justify-center mt-8">
-      <button id="toggleGallery" class="card-gradient px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all shadow-lg">Open Gallery</button>
+      <button id="toggleGallery" class="border border-white/20 bg-white/10 px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition-all">Open Gallery</button>
     </div>
     
     <!-- Gallery Container -->
@@ -410,6 +409,4 @@
   </script>
 </body>
 </html>
-
-
 
