@@ -1,3 +1,4 @@
+// script.js (Corrected Code)
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURATION ---
     const birthday = new Date("2025-09-25T00:00:00+05:30").getTime();
