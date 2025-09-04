@@ -8,7 +8,47 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Pacifico&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-pacifico {
+        font-family: 'Pacifico', cursive;
+    }
+    .card-gradient {
+        background: rgba(255, 255, 255, 0.1);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .body-bg {
+        /* Changed to pitch black */
+        background: #000000;
+    }
+    #confettiCanvas, #starrySkyCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+    #confettiCanvas {
+        z-index: 100;
+    }
+     #starrySkyCanvas {
+        z-index: -10;
+    }
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+  </style>
 </head>
 <body class="body-bg text-white transition-all duration-500">
   <canvas id="starrySkyCanvas"></canvas>
@@ -20,28 +60,362 @@
         <div id="countdown" aria-live="polite" class="mt-4 text-2xl sm:text-3xl font-bold tracking-widest"></div>
     </div>
 
+    <!-- Daily Surprise Card -->
     <div id="dailyMessage" class="w-full max-w-sm relative select-none text-center">
       <p id="message" aria-live="polite" class="text-lg mb-4 min-h-[4rem] flex items-center justify-center"></p>
       <img id="image" src="" alt="Today's memory" class="rounded-xl aspect-square object-cover w-full shadow-lg transition-all duration-300" onerror="this.style.display='none';" />
       
-      <button id="prevBtn" aria-label="Previous Memory" class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/20 p-2 rounded-full hover:bg-white/40 transition disabled:opacity-0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      <!-- Navigation Arrows -->
+      <button id="prevBtn" class="absolute top-1/2 left-2 -translate-y-1/2 bg-white/20 p-2 rounded-full hover:bg-white/40 transition disabled:opacity-0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
       </button>
-
-      <button id="nextBtn" aria-label="Next Memory" class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/20 p-2 rounded-full hover:bg-white/40 transition disabled:opacity-0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      <button id="nextBtn" class="absolute top-1/2 right-2 -translate-y-1/2 bg-white/20 p-2 rounded-full hover:bg-white/40 transition disabled:opacity-0">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       </button>
     </div>
 
+    <!-- Control Buttons -->
     <div class="flex justify-center mt-8">
       <button id="toggleGallery" class="px-6 py-3 font-semibold transition-all opacity-80 hover:opacity-100">Open Memory Gallery</button>
     </div>
     
+    <!-- Gallery Container -->
     <div id="galleryContainer" class="hidden grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-8 w-full max-w-5xl relative z-10"></div>
   </main>
   
   <canvas id="confettiCanvas"></canvas>
 
-  <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- CONFIGURATION ---
+        const birthday = new Date("2025-09-25T00:00:00+05:30").getTime();
+        const unlockStartDate = new Date("2025-09-04T00:00:00+05:30").getTime();
+        const messages = [
+            // Memories from Sep 4 to Sep 25
+            { date: "Sep 4", text: "cant really stop thinknih nndbshbdhwbd dwbjdbwjbdwbnej dnbwjdnewd dwndnwdnweidniewnd dndnwednwiend dndiwenidnweind dndiwneid aman am n snsininisnisnisns", img: "images/sep4.jpg" },
+            { date: "Sep 5", text: "Remember that time we laughed so hard we couldn't breathe?", img: "images/sep5.jpg" },
+            { date: "Sep 6", text: "Your smile could light up the entire city. Never forget that.", img: "images/sep6.jpg" },
+            { date: "Sep 7", text: "Thinking about our late-night talks. They mean the world.", img: "images/sep7.jpg" },
+            { date: "Sep 8", text: "You have a heart of gold. Don't ever let anyone dull your sparkle.", img: "images/sep8.jpg" },
+            { date: "Sep 9", text: "That silly dance you do when you're happy is my favorite thing.", img: "images/sep9.jpg" },
+            { date: "Sep 10", text: "Just a reminder that you are strong, capable, and amazing.", img: "images/sep10.jpg" },
+            { date: "Sep 11", text: "Remember that adventure we went on? Let's do it again soon.", img: "images/sep11.jpg" },
+            { date: "Sep 12", text: "Your kindness is a superpower.", img: "images/sep12.jpg" },
+            { date: "Sep 13", text: "I'm so grateful to have you in my life.", img: "images/sep13.jpg" },
+            { date: "Sep 14", text: "Can't wait to see what amazing things you do this year.", img: "images/sep14.jpg" },
+            { date: "Sep 15", text: "Your passion for your hobbies is truly inspiring.", img: "images/sep15.jpg" },
+            { date: "Sep 16", text: "Thinking about you and smiling today.", img: "images/sep16.jpg" },
+            { date: "Sep 17", text: "You make ordinary moments extraordinary.", img: "images/sep17.jpg" },
+            { date: "Sep 18", text: "Thank you for being you.", img: "images/sep18.jpg" },
+            { date: "Sep 19", text: "Never stop dreaming. You're destined for greatness.", img: "images/sep19.jpg" },
+            { date: "Sep 20", text: "Getting closer! The excitement is building up!", img: "images/sep20.jpg" },
+            { date: "Sep 21", text: "You deserve all the happiness in the world.", img: "images/sep21.jpg" },
+            { date: "Sep 22", text: "Three more days! Can you feel the magic in the air?", img: "images/sep22.jpg" },
+            { date: "Sep 23", text: "So close! Hope you're ready for an amazing birthday.", img: "images/sep23.jpg" },
+            { date: "Sep 24", text: "The day before the big day! Sending you all my love.", img: "images/sep24.jpg" },
+            { date: "Sep 25", text: "HAPPY BIRTHDAY, MAHAK! 🎉 You're officially 23! Let's celebrate!", img: "images/sep25.jpg" },
+        ];
+
+        // --- DOM ELEMENTS ---
+        const countdownEl = document.getElementById("countdown");
+        const messageEl = document.getElementById("message");
+        const imageEl = document.getElementById("image");
+        const dailyMessageCard = document.getElementById("dailyMessage");
+        const galleryContainer = document.getElementById("galleryContainer");
+        const toggleGalleryBtn = document.getElementById("toggleGallery");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        
+        // --- STATE ---
+        let unlockedCount = 0;
+        let currentIndex = 0;
+        let galleryTimerInterval = null;
+
+        // --- FUNCTIONS ---
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = birthday - now;
+
+            if (diff <= 0) {
+                countdownEl.innerHTML = "🎉 Happy Birthday! 🎉";
+                launchConfetti();
+                if(this.intervalId) clearInterval(this.intervalId);
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        function updateUnlocks() {
+            const now = new Date().getTime();
+            const daysPassed = Math.floor((now - unlockStartDate) / (1000 * 60 * 60 * 24));
+            let newUnlockedCount = daysPassed + 1;
+            
+            newUnlockedCount = Math.max(0, Math.min(newUnlockedCount, messages.length));
+
+            if (newUnlockedCount !== unlockedCount) {
+                unlockedCount = newUnlockedCount;
+                currentIndex = unlockedCount > 0 ? unlockedCount - 1 : 0;
+                updateMessage();
+                if (galleryContainer.style.display !== 'none' && galleryContainer.style.display !== '') {
+                    // Rebuild gallery if it's open and a new item unlocks
+                    buildGallery();
+                    // Restart timer for the new next item
+                    if (galleryTimerInterval) clearInterval(galleryTimerInterval);
+                    updateNextGalleryTimer();
+                    galleryTimerInterval = setInterval(updateNextGalleryTimer, 1000);
+                }
+            }
+        }
+        
+        function updateMessage() {
+            dailyMessageCard.classList.remove('fade-in');
+            void dailyMessageCard.offsetWidth;
+            dailyMessageCard.classList.add('fade-in');
+
+            if (unlockedCount > 0 && currentIndex < unlockedCount) {
+                const msg = messages[currentIndex];
+                messageEl.innerText = msg.text;
+                imageEl.src = msg.img;
+                imageEl.alt = `Memory for ${msg.date}`;
+                imageEl.style.display = 'block';
+            } else {
+                messageEl.innerText = "A new surprise unlocks soon!";
+                imageEl.style.display = 'none';
+            }
+            updateNavButtons();
+        }
+
+        function updateNavButtons() {
+            prevBtn.disabled = currentIndex <= 0;
+            nextBtn.disabled = currentIndex >= unlockedCount - 1 || unlockedCount === 0;
+        }
+
+        function updateNextGalleryTimer() {
+            const timerEl = document.querySelector('.locked-timer');
+            if (!timerEl) return; // No timer to update
+
+            const now = new Date().getTime();
+            const unlockTime = parseInt(timerEl.dataset.unlockDate, 10);
+            const diff = unlockTime - now;
+
+            if (diff <= 0) {
+                timerEl.innerText = "Unlocking...";
+                // The main updateUnlocks loop will handle the refresh
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            timerEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        function buildGallery() {
+            galleryContainer.innerHTML = "";
+            messages.forEach((msg, i) => {
+                const card = document.createElement("div");
+                card.className = `p-2 rounded-lg bg-slate-800/50 transition-all duration-300 ${i >= unlockedCount ? 'opacity-50 filter grayscale' : 'cursor-pointer hover:scale-105'}`;
+                
+                if (i < unlockedCount) {
+                    // UNLOCKED ITEM
+                    card.innerHTML = `<img src="${msg.img}" alt="${msg.date}" class="rounded-md w-full aspect-square object-cover"><p class="text-xs mt-2 font-semibold text-center">${msg.date}</p>`;
+                    card.addEventListener('click', () => {
+                        currentIndex = i;
+                        updateMessage();
+                        galleryContainer.style.display = "none";
+                        toggleGalleryBtn.innerText = "Open Memory Gallery";
+                        if (galleryTimerInterval) clearInterval(galleryTimerInterval);
+                    });
+                } else {
+                    // LOCKED ITEM
+                    const unlockDate = new Date(unlockStartDate);
+                    unlockDate.setDate(unlockDate.getDate() + i);
+                    
+                    if (i === unlockedCount) {
+                        // THE VERY NEXT ITEM TO UNLOCK
+                        card.innerHTML = `<div class="w-full aspect-square bg-white/5 rounded-md flex flex-col items-center justify-center text-center p-1"><p class="text-xs font-mono text-center locked-timer" data-unlock-date="${unlockDate.getTime()}"></p></div><p class="text-xs mt-2 font-semibold text-center">${msg.date}</p>`;
+                    } else {
+                        // ALL OTHER FUTURE ITEMS
+                        card.innerHTML = `<div class="w-full aspect-square bg-white/5 rounded-md flex flex-col items-center justify-center text-center p-1"><p class="text-xs">Unlocks soon</p></div><p class="text-xs mt-2 font-semibold text-center">${msg.date}</p>`;
+                    }
+                }
+                galleryContainer.appendChild(card);
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
+        toggleGalleryBtn.addEventListener("click", () => {
+            if (galleryContainer.style.display === "none" || galleryContainer.style.display === "") {
+                buildGallery();
+                galleryContainer.style.display = "grid";
+                toggleGalleryBtn.innerText = "Close Memory Gallery";
+                if (galleryTimerInterval) clearInterval(galleryTimerInterval);
+                updateNextGalleryTimer(); // Run once immediately
+                galleryTimerInterval = setInterval(updateNextGalleryTimer, 1000);
+            } else {
+                galleryContainer.style.display = "none";
+                toggleGalleryBtn.innerText = "Open Memory Gallery";
+                if (galleryTimerInterval) clearInterval(galleryTimerInterval);
+            }
+        });
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateMessage();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < unlockedCount - 1) {
+                currentIndex++;
+                updateMessage();
+            }
+        });
+
+        let startX = 0;
+        dailyMessageCard.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; });
+        dailyMessageCard.addEventListener("touchend", (e) => {
+            const endX = e.changedTouches[0].clientX;
+            const diff = endX - startX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0 && !prevBtn.disabled) { prevBtn.click(); } 
+                else if (diff < 0 && !nextBtn.disabled) { nextBtn.click(); }
+            }
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" && !prevBtn.disabled) { prevBtn.click(); } 
+            else if (e.key === "ArrowRight" && !nextBtn.disabled) { nextBtn.click(); }
+        });
+        
+        // --- INITIALIZATION ---
+        updateCountdown();
+        updateUnlocks();
+        this.intervalId = setInterval(updateCountdown, 1000);
+        setInterval(updateUnlocks, 60000); // Check for new unlocks every minute
+    });
+
+    // --- STARRY SKY LOGIC ---
+    const skyCanvas = document.getElementById("starrySkyCanvas");
+    const skyCtx = skyCanvas.getContext("2d");
+    let stars = [], shootingStars = [];
+    const starColors = [{ r: 244, g: 114, b: 182 }, { r: 192, g: 132, b: 252 }, { r: 96, g: 165, b: 250 }];
+
+    function setupSky() {
+        skyCanvas.width = window.innerWidth;
+        skyCanvas.height = window.innerHeight;
+        stars = [];
+        shootingStars = [];
+        // Increased star count for density, but not too high
+        for (let i = 0; i < 400; i++) {
+            stars.push({
+                x: Math.random() * skyCanvas.width,
+                y: Math.random() * skyCanvas.height,
+                radius: Math.random() * 1.2,
+                alpha: Math.random(),
+                alphaSpeed: (Math.random() - 0.5) * 0.015,
+                color: starColors[Math.floor(Math.random() * starColors.length)]
+            });
+        }
+    }
+
+    function drawSky() {
+        skyCtx.clearRect(0, 0, skyCanvas.width, skyCanvas.height);
+
+        // Draw stars
+        stars.forEach(star => {
+            star.alpha += star.alphaSpeed;
+            if (star.alpha <= 0 || star.alpha >= 1) { star.alphaSpeed *= -1; }
+            skyCtx.beginPath();
+            skyCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            const color = star.color;
+            skyCtx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${star.alpha})`;
+            skyCtx.fill();
+        });
+
+        // Create new shooting stars occasionally
+        if (Math.random() < 0.0075) {
+             shootingStars.push({
+                x: Math.random() * skyCanvas.width,
+                y: Math.random() * skyCanvas.height / 2,
+                len: Math.random() * 120 + 60, // Increased length for even bigger shooting stars
+                speed: Math.random() * 5 + 5,
+                life: 1,
+                color: starColors[Math.floor(Math.random() * starColors.length)]
+            });
+        }
+
+        // Draw and update shooting stars
+        shootingStars.forEach((ss, index) => {
+            ss.x += ss.speed;
+            ss.y += ss.speed;
+            ss.life -= 0.01;
+            if (ss.life <= 0) { shootingStars.splice(index, 1); }
+            skyCtx.beginPath();
+            const grad = skyCtx.createLinearGradient(ss.x, ss.y, ss.x - ss.len, ss.y - ss.len);
+            const ssColor = ss.color;
+            grad.addColorStop(0, `rgba(${ssColor.r}, ${ssColor.g}, ${ssColor.b}, ${ss.life})`);
+            grad.addColorStop(1, `rgba(${ssColor.r}, ${ssColor.g}, ${ssColor.b}, 0)`);
+            skyCtx.strokeStyle = grad;
+            skyCtx.moveTo(ss.x, ss.y);
+            skyCtx.lineTo(ss.x - ss.len, ss.y - ss.len);
+            skyCtx.stroke();
+        });
+
+        requestAnimationFrame(drawSky);
+    }
+    window.addEventListener('resize', setupSky);
+    setupSky();
+    drawSky();
+
+
+    // --- CONFETTI LOGIC ---
+    function launchConfetti() {
+        const canvas = document.getElementById("confettiCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const pieces = [];
+        const numberOfPieces = 200;
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+        function createPiece() {
+            return {
+                x: Math.random() * canvas.width, y: -20, r: Math.random() * 8 + 5,
+                dx: Math.random() * 2 - 1, dy: Math.random() * 4 + 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                opacity: 1, tilt: Math.random() * 10 - 5, tiltAngle: 0,
+            };
+        }
+        for (let i = 0; i < numberOfPieces; i++) { pieces.push(createPiece()); }
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pieces.forEach((p, i) => {
+                p.x += p.dx; p.y += p.dy; p.tiltAngle += p.tilt / 20; p.opacity -= 0.005;
+                ctx.save();
+                ctx.globalAlpha = p.opacity;
+                ctx.translate(p.x + p.r / 2, p.y + p.r / 2);
+                ctx.rotate(p.tiltAngle);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r);
+                ctx.restore();
+                if (p.y > canvas.height || p.opacity <= 0) { pieces[i] = createPiece(); }
+            });
+            requestAnimationFrame(loop);
+        }
+        loop();
+    }
+  </script>
 </body>
 </html>
+
+
+
