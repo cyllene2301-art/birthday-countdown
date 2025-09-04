@@ -1,4 +1,3 @@
-// script.js (Corrected Code)
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURATION ---
     const birthday = new Date("2025-09-25T00:00:00+05:30").getTime();
@@ -183,3 +182,135 @@ document.addEventListener('DOMContentLoaded', () => {
     function initialize() {
         updateCountdown();
         updateUnlocks();
+        this.intervalId = setInterval(updateCountdown, 1000);
+        setInterval(updateUnlocks, 60000);
+    }
+    
+    // Fetch data then initialize the application
+    fetch('memories.json')
+        .then(response => response.json())
+        .then(data => {
+            messages = data;
+            initialize();
+        })
+        .catch(error => console.error("Could not load memories:", error));
+});
+
+// --- STARRY SKY LOGIC ---
+const skyCanvas = document.getElementById("starrySkyCanvas");
+const skyCtx = skyCanvas.getContext("2d");
+let stars = [], shootingStars = [];
+const starColors = [{ r: 244, g: 114, b: 182 }, { r: 192, g: 132, b: 252 }, { r: 96, g: 165, b: 250 }];
+
+function setupSky() {
+    skyCanvas.width = window.innerWidth;
+    skyCanvas.height = window.innerHeight;
+    stars = [];
+    shootingStars = [];
+    for (let i = 0; i < 400; i++) {
+        stars.push({
+            x: Math.random() * skyCanvas.width,
+            y: Math.random() * skyCanvas.height,
+            radius: Math.random() * 1.2,
+            alpha: Math.random(),
+            alphaSpeed: (Math.random() - 0.5) * 0.015,
+            color: starColors[Math.floor(Math.random() * starColors.length)]
+        });
+    }
+}
+
+function drawSky() {
+    skyCtx.clearRect(0, 0, skyCanvas.width, skyCanvas.height);
+    stars.forEach(star => {
+        star.alpha += star.alphaSpeed;
+        if (star.alpha <= 0 || star.alpha >= 1) { star.alphaSpeed *= -1; }
+        skyCtx.beginPath();
+        skyCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        const color = star.color;
+        skyCtx.fillStyle = `rgba(${color.r}, ${color.g}, ${color.b}, ${star.alpha})`;
+        skyCtx.fill();
+    });
+
+    if (Math.random() < 0.0075) {
+         shootingStars.push({
+            x: Math.random() * skyCanvas.width,
+            y: Math.random() * skyCanvas.height / 2,
+            len: Math.random() * 120 + 60,
+            speed: Math.random() * 5 + 5,
+            life: 1,
+            color: starColors[Math.floor(Math.random() * starColors.length)]
+        });
+    }
+
+    shootingStars.forEach((ss, index) => {
+        ss.x += ss.speed;
+        ss.y += ss.speed;
+        ss.life -= 0.01;
+        if (ss.life <= 0) { shootingStars.splice(index, 1); }
+        skyCtx.beginPath();
+        const grad = skyCtx.createLinearGradient(ss.x, ss.y, ss.x - ss.len, ss.y - ss.len);
+        const ssColor = ss.color;
+        grad.addColorStop(0, `rgba(${ssColor.r}, ${ssColor.g}, ${ssColor.b}, ${ss.life})`);
+        grad.addColorStop(1, `rgba(${ssColor.r}, ${ssColor.g}, ${ssColor.b}, 0)`);
+        skyCtx.strokeStyle = grad;
+        skyCtx.moveTo(ss.x, ss.y);
+        skyCtx.lineTo(ss.x - ss.len, ss.y - ss.len);
+        skyCtx.stroke();
+    });
+
+    requestAnimationFrame(drawSky);
+}
+window.addEventListener('resize', setupSky);
+setupSky();
+drawSky();
+
+// --- CONFETTI LOGIC ---
+function launchConfetti() {
+    const canvas = document.getElementById("confettiCanvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const pieces = [];
+    const numberOfPieces = 200;
+    const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'];
+    const duration = 30 * 1000; // 30 seconds
+    const animationEnd = Date.now() + duration;
+
+    function createPiece() {
+        return {
+            x: Math.random() * canvas.width, y: -20, r: Math.random() * 8 + 5,
+            dx: Math.random() * 2 - 1, dy: Math.random() * 4 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            opacity: 1, tilt: Math.random() * 10 - 5, tiltAngle: 0,
+        };
+    }
+    for (let i = 0; i < numberOfPieces; i++) { pieces.push(createPiece()); }
+    
+    function loop() {
+        if (Date.now() > animationEnd) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return; // Stop the animation
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((p, i) => {
+            p.x += p.dx; p.y += p.dy; p.tiltAngle += p.tilt / 20;
+            ctx.save();
+            ctx.globalAlpha = p.opacity;
+            ctx.translate(p.x + p.r / 2, p.y + p.r / 2);
+            ctx.rotate(p.tiltAngle);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r);
+            ctx.restore();
+            if (p.y > canvas.height) { pieces.splice(i, 1); }
+        });
+        
+        if (pieces.length <= 0 && Date.now() > animationEnd) {
+             ctx.clearRect(0, 0, canvas.width, canvas.height);
+             return;
+        }
+
+        requestAnimationFrame(loop);
+    }
+    loop();
+}
