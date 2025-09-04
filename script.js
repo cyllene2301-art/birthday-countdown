@@ -1,4 +1,3 @@
-// script.js (Corrected Code)
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURATION ---
     const birthday = new Date("2025-09-25T00:00:00+05:30").getTime();
@@ -208,11 +207,13 @@ function setupSky() {
     skyCanvas.height = window.innerHeight;
     stars = [];
     shootingStars = [];
-    for (let i = 0; i < 400; i++) {
+    // UPDATED: More stars (was 400, now 600)
+    for (let i = 0; i < 600; i++) {
         stars.push({
             x: Math.random() * skyCanvas.width,
             y: Math.random() * skyCanvas.height,
-            radius: Math.random() * 1.2,
+            // UPDATED: Bigger stars (was 1.2, now 1.6)
+            radius: Math.random() * 1.6,
             alpha: Math.random(),
             alphaSpeed: (Math.random() - 0.5) * 0.015,
             color: starColors[Math.floor(Math.random() * starColors.length)]
@@ -232,12 +233,14 @@ function drawSky() {
         skyCtx.fill();
     });
 
-    if (Math.random() < 0.0075) {
+    // UPDATED: More frequent shooting stars (was 0.0075, now 0.015)
+    if (Math.random() < 0.015) {
          shootingStars.push({
             x: Math.random() * skyCanvas.width,
             y: Math.random() * skyCanvas.height / 2,
-            len: Math.random() * 120 + 60,
-            speed: Math.random() * 5 + 5,
+            // UPDATED: Bigger/longer and faster shooting stars
+            len: Math.random() * 150 + 80,
+            speed: Math.random() * 5 + 7,
             life: 1,
             color: starColors[Math.floor(Math.random() * starColors.length)]
         });
